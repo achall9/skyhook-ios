@@ -1,0 +1,6 @@
+framework module Pods_SkyhookUITests {
+  umbrella header "Pods-SkyhookUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
