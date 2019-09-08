@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate {
    
     @IBOutlet weak var tableView: UITableView!
     
@@ -17,6 +17,7 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
     override func viewDidLoad() {
         super.viewDidLoad()
      
+
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ActivityItemTableViewCell", bundle: nil), forCellReuseIdentifier: "ActivityItemTableViewCell")
@@ -24,16 +25,26 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
         
         setHeader()
         
+
+        
+    }
+    
+    //claim header info button click -- Delegate function
+    func didTapInfo() {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimInfoViewController") as! ClaimInfoViewController
+        //        viewController.claim = claims[indexPath.row]
+        self.navigationController?.pushViewController(viewController, animated: true)
     }
     
     
     func setHeader(){
         
         let view = (Bundle.main.loadNibNamed("ClaimHeaderView", owner: self, options: nil)![0] as! ClaimHeaderView)
+        view.delegate = self
 
         claim = Claim()
         claim.id = "12"
-   
+
         view.setViews(claim:claim)
 
         //set headerview to tableview
@@ -49,8 +60,9 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     @IBAction func addNewActivity(_ sender: Any) {
-       let viewController:UIViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
-        self.present(viewController, animated: false, completion: nil)
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
+        //        viewController.claim = claims[indexPath.row]
+        self.navigationController?.pushViewController(viewController, animated: true)
     }
     
     
@@ -92,4 +104,22 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
    
+    
+
+    func confirmWithAlert(){
+        
+        let alert = UIAlertController(title: "Confirm Action", message: "Are you sure you want to close this claim? You cannot undo this action.", preferredStyle: UIAlertController.Style.alert)
+        
+        alert.addAction(UIAlertAction(title: "Close Claim",style: .default, handler: {(alert: UIAlertAction!) in
+            
+            //update claim to closed
+            
+            
+        }))
+        alert.addAction(UIAlertAction(title:"Cancel", style: .cancel))
+        
+        
+        
+        self.present(alert, animated: true, completion: nil)
+    }
 }

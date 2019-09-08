@@ -100,7 +100,7 @@
                 <outlet property="timeLabel" destination="auy-fI-jtC" id="W0H-L8-5Wt"/>
                 <outlet property="view" destination="drC-s2-XWa" id="oor-Ly-J0v"/>
             </connections>
-            <point key="canvasLocation" x="137.68115942028987" y="89.732142857142847"/>
+            <point key="canvasLocation" x="137.59999999999999" y="89.408866995073893"/>
         </tableViewCell>
     </objects>
     <resources>

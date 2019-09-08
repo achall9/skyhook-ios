@@ -34,19 +34,19 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         // grid views
         view.view0.layer.masksToBounds = false
         view.view0.layer.cornerRadius = view.view0.frame.height/2
-        view.view0.clipsToBounds = true
-        
-        view.view1.layer.masksToBounds = false
+       view.view0.clipsToBounds = true
+
+       view.view1.layer.masksToBounds = false
         view.view1.layer.cornerRadius = view.view1.frame.height/2
         view.view1.clipsToBounds = true
-        
+
         view.view2.layer.masksToBounds = false
         view.view2.layer.cornerRadius = view.view2.frame.height/2
-        view.view2.clipsToBounds = true
-        
-        view.view3.layer.masksToBounds = false
-        view.view3.layer.cornerRadius = view.view3.frame.height/2
-        view.view3.clipsToBounds = true
+       view.view2.clipsToBounds = true
+
+       view.view3.layer.masksToBounds = false
+       view.view3.layer.cornerRadius = view.view3.frame.height/2
+       view.view3.clipsToBounds = true
         
         let yourAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 15),
@@ -67,15 +67,22 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //go to claim detail view
+        tableView.deselectRow(at: indexPath, animated: false)
+        
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
+        //        viewController.claim = claims[indexPath.row]
+        self.navigationController?.pushViewController(viewController, animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 5
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 85
+        return 220
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ClaimCell") as! ClaimsTableViewCell
+        cell.statusView.backgroundColor = ColorUtils.getGreenColor()
+        cell.statusLabel.text = "CLOSED"
         return cell
     }
 

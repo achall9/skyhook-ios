@@ -30,8 +30,8 @@ class NewActivityViewController: UIViewController, UITableViewDelegate, UITableV
 
     
     @IBAction func goBack(_ sender: Any) {
-        let viewController:UIViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
-        self.present(viewController, animated: false, completion: nil)
+       
+        self.navigationController?.popViewController(animated: false)
     }
     
     
@@ -72,11 +72,10 @@ class NewActivityViewController: UIViewController, UITableViewDelegate, UITableV
 
     
     func createActivity(){
-
-        //go to claim view and show new acitvities added
-        let viewController:ClaimDetailViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
         
-        self.present(viewController, animated: false, completion: nil)
+        //go to claim view and show new acitvities added
+        self.navigationController?.popViewController(animated: false)
+
     }
     
     

@@ -13,30 +13,39 @@ class ClaimsTableViewCell: UITableViewCell {
     let BORDER_WIDTH: CGFloat = 1.0
    
     @IBOutlet weak var mainView: UIView!
-    @IBOutlet weak var claimNumView: UIView!
-    @IBOutlet weak var flagView: UIView!
-    @IBOutlet weak var labelView: UIView!
-    @IBOutlet weak var buttonView: UIView!
     
+    @IBOutlet weak var statusView: UIView!
+    @IBOutlet weak var statusLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
+        // add shadow on cell
+        mainView.backgroundColor = .clear // very important
+        mainView.layer.masksToBounds = false
+        mainView.layer.shadowOpacity = 0.20
+        mainView.layer.shadowRadius = 3
+        mainView.layer.shadowOffset = CGSize(width: 0, height: 0)
+        mainView.layer.shadowColor = UIColor.black.cgColor
         
-        setBorders()
+        // add corner radius on `contentView`
+        mainView.backgroundColor = .white
+        mainView.layer.cornerRadius = 3
+        
+//        setBorders()
         
     }
     
     func setBorders(){
-        self.mainView.layer.borderWidth = BORDER_WIDTH
-        self.mainView.layer.borderColor = UIColor.gray.cgColor
+//        self.mainView.layer.borderWidth = BORDER_WIDTH
+//        self.mainView.layer.borderColor = UIColor.gray.cgColor
 
 //        self.claimNumView.layer.borderWidth = BORDER_WIDTH
 //        self.claimNumView.layer.borderColor = UIColor.gray.cgColor
       
 
-        self.labelView.layer.borderWidth = BORDER_WIDTH
-        self.labelView.layer.borderColor = UIColor.gray.cgColor
+//        self.labelView.layer.borderWidth = BORDER_WIDTH
+//        self.labelView.layer.borderColor = UIColor.gray.cgColor
 
     }
 

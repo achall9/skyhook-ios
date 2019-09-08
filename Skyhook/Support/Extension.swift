@@ -23,7 +23,6 @@ extension UIViewController {
     
 }
 
-
 // SET PADDING ON TEXTFIELD EDGES
 extension UITextField {
     func setLeftPaddingPoints(_ amount:CGFloat){
@@ -48,4 +47,10 @@ extension UIStackView {
     }
 }
 
+//LOAD SUBVIEW NIB FILES EASY
+extension UIView {
+    class func fromNib<T: UIView>() -> T {
+        return Bundle.main.loadNibNamed(String(describing: T.self), owner: nil, options: nil)![0] as! T
+    }
+}
 

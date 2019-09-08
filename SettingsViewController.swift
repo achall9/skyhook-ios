@@ -13,7 +13,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet weak var tableView: UITableView!
     
 //    let options:[String] = ["Change email","Edit password","Password recovery","Logout"]
-    
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,6 +31,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //go to setting action
+        tableView.deselectRow(at: indexPath, animated: false)
+        if indexPath.row == 3 {
+            User.sharedInstance.logout()
+            self.appDelegate.enterApp(false)
+        }
+    
+        
         
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -59,7 +67,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         default:
             cell.titleLabel.text = "Logout"
             cell.icon.image = UIImage(named: "logout")
-            cell.nextButton.alpha = 0.0
             break
         }
         

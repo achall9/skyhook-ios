@@ -19,18 +19,21 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Skyhook would like access to your camera so you can take pictures with your activites.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Skyhook would like to track your location during claim activities.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>Skyhook would like to track your location during claim activities.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Skyhook would like to track your location during claim activities.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Skyhook would like access to your photo gallery so you can share images with your acitivties.</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

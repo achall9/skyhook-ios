@@ -6,6 +6,11 @@
 //  Copyright © 2019 Alexander Hall. All rights reserved.
 //
 
+
+/// *** BASE VIEW CONTROLLER TO HOLD COMMON FUNCTIONS ACROSS APP CONTROLLERS *** //
+// - Show Alert, Send push,
+
+
 import UIKit
 
 class BaseViewController: UIViewController {
@@ -27,4 +32,5 @@ class BaseViewController: UIViewController {
     }
     */
 
+  
 }

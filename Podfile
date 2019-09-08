@@ -7,11 +7,12 @@ target 'Skyhook' do
 
   # Pods for Skyhook
 
-  # Add the Firebase pod for Google Analytics
+  # Firebase pods
   pod 'Firebase/Analytics'
   pod 'Firebase/Auth'
   pod 'Firebase/Database'
-  pod 'Alamofire'
+  pod 'Firebase/Messaging'
+
 
 
   target 'SkyhookTests' do

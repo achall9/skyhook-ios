@@ -10,13 +10,21 @@ import UIKit
 
 class ClaimInfoViewController: UIViewController {
 
+    @IBOutlet weak var scrollView: UIScrollView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        //add subviews
+        let compView: CompanyInfoView = .fromNib()
+        scrollView.addSubview(compView)
     }
     
-
+    
+    @IBAction func goBack(_ sender: Any) {
+        self.navigationController?.popViewController(animated: false)
+    }
+    
     /*
     // MARK: - Navigation
 

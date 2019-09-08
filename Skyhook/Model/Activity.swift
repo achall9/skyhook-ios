@@ -16,6 +16,8 @@ class Activity: NSObject {
     var time: Double = 0.00
     var timer = Timer()
     
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+
     func loadActivity(_ info: NSDictionary) {
         //        self.id = info["id"] != nil ? info["id"] as? Int : self.id
     }
@@ -35,19 +37,46 @@ class Activity: NSObject {
     
     //stop time tracking
     func stopTracking(){
-        print("STOP")
+        print("STOPPED")
         timer.invalidate()
     }
     
     @objc func UpdateTimer() {
-        print(time)
         time = time + timer.timeInterval
         NotificationCenter.default.post(name: Notification.Name(Notifications.UPDATE_TIMER), object: nil)
         
-        //every 5-15 seconds push location coordinates to api after running a check
-        //        if counter == %5 {
+        
+        
+        /// *** Flag and Monitoring Logic *** ///
+        
+        //every 5 seconds push location coordinates to api to track user's route to destination -- display this on web portal
+        
+       // if i %% 5 {
+       //send user share instance lat and long
+  //  }
+        
+        //when receive location data Check for these:
+        
+        //      Driving Task
+        //      - driving task on and stationary for > 4 minutes, flag it.
+        //      - driving task on 10 minutes longer than estimated maps time, flag it
+        //      - location is not relative to driving zone -- same state? , flag it
+        
+        //      Non-Driving Task
+        //      - stationary task and movement > 0.25 miles, flag it,  send push 'Did you forget to //turn off your tracking?'
+        //     - location is not relative to insured/claimant data, flag it
         //
-        //        }
+        
+        //      All Tasks
+        // -- No internet, flag it, track locally until internet is available again
+        // -- alert user tracking has ended if force close app with push notification
+        
+        
+        // -- How do we determine when a claim is fully finished ? So cannot be opened up again and tracked.
+      //  -- Add closed claim button in red
+        
+        
+        //       //
         
     }
     

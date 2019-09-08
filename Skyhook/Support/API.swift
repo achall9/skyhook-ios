@@ -23,9 +23,16 @@ class API: NSObject {
     
     let rootR = Database.database().reference()
     
-    func checkUserExists()->Bool{
+    func checkUserExists(email: String)->Bool {
+        var exists = false
+        rootR.child("FCM_TOKENS").queryOrderedByKey().observeSingleEvent(of: .value) { (snapchat) in
+            let v = snapchat.value as! NSDictionary
+            if v[email] != nil {
+                exists = true
+            }
+        }
         
-        return false
+        return exists
     }
     
     func saveUserToken(uid:String, token: String){

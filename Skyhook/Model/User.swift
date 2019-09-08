@@ -20,6 +20,8 @@ class User: NSObject {
     var id: String?
     var name: String?
     var email: String?
+    var lat: Double?
+    var lng: Double?
 
     func loadUser(_ info: NSDictionary) {
 //        self.id = info["id"] != nil ? info["id"] as? Int : self.id
@@ -29,6 +31,8 @@ class User: NSObject {
         self.id = ""
         self.name = ""
         self.email = ""
+        self.lat = 0.0
+        self.lng = 0.0
     }
     
     func exists() -> Bool{
@@ -39,6 +43,15 @@ class User: NSObject {
     
     func login (email:String,password:String){
         
+        UserDefaults.standard.setValue(email, forKey: "email")
+        UserDefaults.standard.setValue(password, forKey: "password")
+    }
+    
+    
+    func logout(){
+        self.initialize()
+        UserDefaults.standard.setValue("", forKey: "email")
+        UserDefaults.standard.setValue("", forKey: "password")
     }
     
     func register (email:String,password:String){

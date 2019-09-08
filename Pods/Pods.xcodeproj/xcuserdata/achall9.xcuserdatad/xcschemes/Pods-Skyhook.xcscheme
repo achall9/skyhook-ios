@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4F1A8E34D701FB44674908066CE61875"
+               BlueprintIdentifier = "D7B64A47C495439D2E9F957370240683"
                BuildableName = "Pods_Skyhook.framework"
                BlueprintName = "Pods-Skyhook"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -45,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4F1A8E34D701FB44674908066CE61875"
+            BlueprintIdentifier = "D7B64A47C495439D2E9F957370240683"
             BuildableName = "Pods_Skyhook.framework"
             BlueprintName = "Pods-Skyhook"
             ReferencedContainer = "container:Pods.xcodeproj">
