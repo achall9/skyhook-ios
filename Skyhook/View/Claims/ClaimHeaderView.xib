@@ -77,7 +77,7 @@
                                         </imageView>
                                     </subviews>
                                 </stackView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Marissa Cloud cloud clooud" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lz8-nR-4jI">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Maeve Veronika" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lz8-nR-4jI">
                                     <rect key="frame" x="48" y="0.0" width="322" height="25"/>
                                     <constraints>
                                         <constraint firstAttribute="width" constant="322" id="AAq-eg-Vn4"/>
@@ -89,7 +89,7 @@
                             </subviews>
                         </stackView>
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="TDy-jM-xho">
-                            <rect key="frame" x="0.0" y="94" width="235" height="25"/>
+                            <rect key="frame" x="0.0" y="94" width="130" height="25"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="iG9-Ie-3ST">
                                     <rect key="frame" x="0.0" y="0.0" width="25" height="25"/>
@@ -103,15 +103,15 @@
                                         </imageView>
                                     </subviews>
                                 </stackView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(239) 313 3114" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X6U-I2-kLL">
-                                    <rect key="frame" x="45" y="0.0" width="190" height="25"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" constant="190" id="UUv-Y9-zeC"/>
-                                    </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Xj-Mx-g0h">
+                                    <rect key="frame" x="45" y="0.0" width="85" height="25"/>
+                                    <state key="normal" title="2393133114">
+                                        <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </state>
+                                    <connections>
+                                        <action selector="callPhone:" destination="bhD-cf-qbs" eventType="touchUpInside" id="cxL-m3-lFw"/>
+                                    </connections>
+                                </button>
                             </subviews>
                         </stackView>
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="BMh-uC-vYY">
@@ -133,16 +133,20 @@
                                         <constraint firstAttribute="width" constant="25" id="hZ2-RE-KC6"/>
                                     </constraints>
                                 </stackView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ABC Insurance Firm ABC Insurance Firm ABC Insurance Firm" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jnz-V3-Sva">
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9AP-iJ-92Y">
                                     <rect key="frame" x="45" y="0.0" width="312" height="35"/>
                                     <constraints>
-                                        <constraint firstAttribute="width" constant="312" id="T6U-xc-vhV"/>
-                                        <constraint firstAttribute="height" constant="35" id="clF-qT-cGr"/>
+                                        <constraint firstAttribute="width" constant="312" id="L3a-LZ-r1A"/>
+                                        <constraint firstAttribute="height" constant="35" id="r2B-6Y-7Dj"/>
                                     </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
+                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                    <state key="normal" title="600 Okeechobee Blvd, West Palm Beach, FL 33401">
+                                        <color key="titleColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </state>
+                                    <connections>
+                                        <action selector="clickAddress:" destination="bhD-cf-qbs" eventType="touchUpInside" id="E6a-Ax-c3N"/>
+                                    </connections>
+                                </button>
                             </subviews>
                         </stackView>
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="21" translatesAutoresizingMaskIntoConstraints="NO" id="2gt-pP-otJ">
@@ -193,9 +197,9 @@
                 </userDefinedRuntimeAttribute>
             </userDefinedRuntimeAttributes>
             <connections>
-                <outlet property="contactAddressLabel" destination="jnz-V3-Sva" id="9dq-i6-C2Q"/>
+                <outlet property="contactAddressButton" destination="9AP-iJ-92Y" id="T3K-VZ-tb3"/>
                 <outlet property="contactNameLabel" destination="lz8-nR-4jI" id="ub2-sL-g3g"/>
-                <outlet property="contactPhoneLabel" destination="X6U-I2-kLL" id="iTj-MA-Gew"/>
+                <outlet property="contactPhoneButton" destination="9Xj-Mx-g0h" id="caR-vV-nMA"/>
                 <outlet property="firmLabel" destination="zTA-EB-geK" id="Urr-zc-uSM"/>
             </connections>
             <point key="canvasLocation" x="220.80000000000001" y="-231.2807881773399"/>

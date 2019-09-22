@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CoreLocation
+import MapKit
 
 protocol ClaimHeaderDelegate {
     func didTapInfo()
@@ -15,8 +17,10 @@ protocol ClaimHeaderDelegate {
 class ClaimHeaderView: UIView {
     @IBOutlet weak var firmLabel: UILabel!
     @IBOutlet weak var contactNameLabel: UILabel!
-    @IBOutlet weak var contactPhoneLabel: UILabel!
-    @IBOutlet weak var contactAddressLabel: UILabel!
+  
+    @IBOutlet weak var contactPhoneButton: UIButton!
+   
+    @IBOutlet weak var contactAddressButton: UIButton!
     
     var claim: Claim?
     
@@ -27,13 +31,6 @@ class ClaimHeaderView: UIView {
         self.claim = claim
         self.layer.borderWidth = 1.0
         self.layer.borderColor = UIColor.lightGray.cgColor
-        
-        let addrTap = UITapGestureRecognizer(target: self, action: #selector(self.handleAddrTap(_:)))
-        contactAddressLabel.addGestureRecognizer(addrTap)
-        
-        let phoneTap = UITapGestureRecognizer(target: self, action: #selector(self.handlePhoneTap(_:)))
-        contactAddressLabel.addGestureRecognizer(phoneTap)
-        
                 
     }
     
@@ -56,22 +53,39 @@ class ClaimHeaderView: UIView {
 //        }
         
     }
-    
-    @objc func handleAddrTap(_ sender: UITapGestureRecognizer? = nil) {
+    @IBAction func clickAddress(_ sender: Any) {
         // go to maps address for navigation if needed
-        UIApplication.shared.openURL(URL(string: "http://maps.apple.com/?address=\(contactAddressLabel.text ?? "")")!)
+        
+        let geocoder = CLGeocoder()
+        let locationString = contactAddressButton.titleLabel?.text
+        
+        geocoder.geocodeAddressString(locationString!) { (placemarks, error) in
+            if let error = error {
+                print(error.localizedDescription)
+            } else {
+                if let location = placemarks?.first?.location {
+                    let coordinate = CLLocationCoordinate2DMake(location.coordinate.latitude,location.coordinate.longitude)
+                    let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate, addressDictionary:nil))
+                    mapItem.name = "Claim Destination"
+                    mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
+                    
+                }
+            }
+        }
+        
     }
     
-    @objc func handlePhoneTap(_ sender: UITapGestureRecognizer? = nil) {
+   
+    @IBAction func callPhone(_ sender: Any) {
         // alert to call phone number
-        if let url = URL(string: "tel://\(contactPhoneLabel.text ?? "")"), UIApplication.shared.canOpenURL(url) {
+        if let url = URL(string: "tel://\(contactPhoneButton.titleLabel?.text ?? "")"), UIApplication.shared.canOpenURL(url) {
             if #available(iOS 10, *) {
                 UIApplication.shared.open(url)
             } else {
                 UIApplication.shared.openURL(url)
             }
         }
-      
     }
+ 
     
 }

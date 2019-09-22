@@ -6,32 +6,33 @@
 //  Copyright © 2019 Alexander Hall. All rights reserved.
 //
 
-//import Firebase
-import UIKit
 import Firebase
+import UIKit
 import CoreLocation
+import UserNotifications
+import FirebaseMessaging
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate {
 
     var window: UIWindow?
     
     var user: User?
     var locationManager: CLLocationManager?
     var isTracking: Bool = false
+    var activity: Activity?
+    var currentLocation: CLLocation?
     
-
     let gcmMessageIDKey = "gcm.message_id"
 
-
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         FirebaseApp.configure()
         
         Messaging.messaging().delegate = self
-
+ 
         // [START register_for_notifications]
         if #available(iOS 10.0, *) {
             // For iOS 10 display notification (sent via APNS)
@@ -44,20 +45,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         application.registerForRemoteNotifications()
-        
-        
-         UIApplication.shared.applicationIconBadgeNumber = 0
+        UIApplication.shared.applicationIconBadgeNumber = 0
         
         //account exists so login
         let emailDefaults = UserDefaults.standard.string(forKey: "email")
-        print("EMAIL Account Found --> \(emailDefaults)")
-
+        let passwordDefaults = UserDefaults.standard.string(forKey: "password")
         if emailDefaults != nil && emailDefaults != "" {
-            enterApp(true)
+            User.sharedInstance.login(email: emailDefaults!, password: passwordDefaults ?? "") { result in
+                if result { //success
+                   self.enterApp(true)
+                } else {
+                 self.enterApp(false)
+                }
+            }
         } else {
             enterApp(false)
         }
-//
+
+        
         return true
     }
     
@@ -67,24 +72,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var navigationController: UINavigationController?
         var storyboard: UIStoryboard?
 
-        if loggedIn {  // authorized user -- directo to main tabs if location permissions set, else tkae to location enable controller
-            
-            if checkLocationPermissions(){
+        if loggedIn {  // authorized user -- directo to main tabs if notification and location permissions set, else tkae to location enable controller
+            if checkNotificationPermissions() {
                 
-                storyboard = UIStoryboard(name: "Main", bundle: nil)
-                navigationController = storyboard!.instantiateViewController(withIdentifier :"mainNavController") as? UINavigationController
-                
-            }
-            else {
+                if checkLocationPermissions(){
+                    
+                    self.configureLocationSettings()
+
+                    storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    navigationController = storyboard!.instantiateViewController(withIdentifier :"mainNavController") as? UINavigationController
+                    
+                }
+                else {
+                    
+                    storyboard = UIStoryboard(name: "Auth", bundle: nil)
+                    navigationController = storyboard!.instantiateViewController(withIdentifier :"authNavController") as? UINavigationController
+                    
+                    let locationViewController = storyboard?.instantiateViewController(withIdentifier: "EnableLocationViewController") as! EnableLocationViewController
+                    navigationController?.pushViewController(locationViewController, animated: false)
+                    
+                }
+            } else {
                 
                 storyboard = UIStoryboard(name: "Auth", bundle: nil)
                 navigationController = storyboard!.instantiateViewController(withIdentifier :"authNavController") as? UINavigationController
                 
-                let locationViewController = storyboard?.instantiateViewController(withIdentifier: "EnableLocationViewController") as! EnableLocationViewController
+                let locationViewController = storyboard?.instantiateViewController(withIdentifier: "EnableNotificationsViewController") as! EnableNotificationsViewController
                 navigationController?.pushViewController(locationViewController, animated: false)
                 
             }
-         
+        
             
         } else { // unauthorize user -- directo to sign in screen
             
@@ -101,6 +118,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     
+    //check notifications are enabled
+    func checkNotificationPermissions()->Bool {
+        // [START register_for_notifications]
+        let notificationType = UIApplication.shared.currentUserNotificationSettings!.types
+        if notificationType == [] {
+            print("notifications are NOT enabled")
+            return false
+        } else {
+            print("notifications are enabled")
+            return true
+        }
+    }
+
     
     //check location is enabled
     func checkLocationPermissions()->Bool {
@@ -114,24 +144,109 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return true
             }
         } else {
-            print("Location services are not enabled")
+            print("Location services are NOT enabled")
             return false
         }
+    }
+    
+    
+    func configureLocationSettings() {
+        locationManager = CLLocationManager()
+        locationManager?.delegate = self
+        locationManager!.startUpdatingLocation()
+        locationManager?.allowsBackgroundLocationUpdates = true
+        locationManager?.pausesLocationUpdatesAutomatically = false
+        locationManager?.desiredAccuracy = kCLDistanceFilterNone
     }
     
     
     
     //location tracking
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+       print("Location udpated")
+
         if let location = locations.last {
-            print("New location is \(location)")
-            user?.lat = location.coordinate.latitude
-            user?.lng = location.coordinate.longitude
+//            print("****** New location is \(location) *******")
+            self.currentLocation = location
+            
+            print(location.timestamp)
+            
+            if self.isTracking {
+                //check for cases that could cheat the system
+                timeCheckin(location: location)
+            }
+            
+        }
+        
+    }
+    
+    func timeCheckin(location:CLLocation) {
+        if UserDefaults.standard.object(forKey: "time_check") != nil {
+        
+            let startTime = (UserDefaults.standard.object(forKey: "time_check") as? Date)!
+            let diffInMinutes = Calendar.current.dateComponents([.minute], from: startTime, to: location.timestamp).minute
+          
+            print(startTime)
+            print(location.timestamp)
+            print("DIFFERENCE IN MINUTES: \(diffInMinutes)")
+            //4 minutes passed, validate driving and stationary task
+            if diffInMinutes! >= 4 {
+                print("TIMES UP --> Validate Activity")
+                validateUserActivity()
+            }
+            
+        } else {
+            
+            UserDefaults.standard.set(location.timestamp, forKey: "time_check")
+            UserDefaults.standard.set(location.coordinate.latitude, forKey: "lat_check")
+            UserDefaults.standard.set(location.coordinate.longitude, forKey: "lng_check")
+
+        }
+    }
+    
+    func validateUserActivity() {
+        print("CHECKING DISTANCE MOVED")
+        
+        if UserDefaults.standard.float(forKey: "lat_check") != nil {
+            let startLat = UserDefaults.standard.object(forKey: "lat_check") as! CLLocationDegrees
+            let startLng = UserDefaults.standard.object(forKey: "lng_check") as! CLLocationDegrees
+            
+            let start = CLLocation(latitude: startLat, longitude: startLng)
+          
+            let distanceInMeters = start.distance(from: self.currentLocation!)
+            
+            print("DISTANCE TRAVELED: \(distanceInMeters)")
+            switch activity?.name {
+           
+            case "Driving to Destination":
+                // under 100 feet (30 meters) and driving
+                print("DRIVE TASK CONFIRM")
+                if distanceInMeters < 30 {
+                    self.sendLocalNotification(title:"Driving Activity Flagged",message: "Your location has not moved significantly in over 4 minutes time.")
+                }
+                break
+         
+            default:
+                if distanceInMeters >= 30 {
+                    if !(activity?.name?.contains("Driving"))!{
+                        // out of 100 foot radius on stationary task.. not good
+                        self.sendLocalNotification(title:"Stationary Activity Flagged",message: "Did you forget to turn off your tracking?")
+                    }
+                }
+                break
+                
+            }
+         
+            //Repeat checkin process...
+            UserDefaults.standard.set(nil, forKey: "time_check")
+            UserDefaults.standard.set(0.0, forKey: "lat_check")
+            UserDefaults.standard.set(0.0, forKey: "lng_check")
+            
         }
     }
     
     
-    
+
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
         // If you are receiving a notification message while your app is in the background,
         // this callback will not be fired till the user taps on the notification launching the application.
@@ -178,7 +293,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         print("APNs token retrieved: \(deviceToken)")
         
-        Messaging.messaging().apnsToken = deviceToken
+        //Messaging.messaging().apnsToken = deviceToken
         
     }
 
@@ -192,6 +307,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -200,28 +316,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        
+        UIApplication.shared.applicationIconBadgeNumber = 0
+
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         
-        sendLocalNotification()
+        
         // Send push notification if tracking that it has stopped!
         if self.isTracking {
             // save tracking time ended flag it,
-           
+           sendLocalNotification(title:"Tracking Paused", message: "Please open Skyhook again to track your activity.")
             
         }
     }
 
     
-    func sendLocalNotification(){
+    func sendLocalNotification(title:String, message:String){
         let notificationCenter = UNUserNotificationCenter.current()
 
         let content = UNMutableNotificationContent() // Содержимое уведомления
         
-        content.title = "Tracking Stopped"
-        content.body = "Please open Skyhook again to track your activity without being flagged."
+        content.title = title
+        content.body = message
         content.sound = UNNotificationSound.default
         content.badge = 1
         
@@ -234,6 +353,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+    
 
 }
 
@@ -313,3 +433,6 @@ extension AppDelegate : MessagingDelegate {
     }
     // [END ios_10_data_message]
 }
+
+ 
+

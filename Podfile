@@ -8,10 +8,14 @@ target 'Skyhook' do
   # Pods for Skyhook
 
   # Firebase pods
+  pod 'Firebase'
   pod 'Firebase/Analytics'
   pod 'Firebase/Auth'
   pod 'Firebase/Database'
   pod 'Firebase/Messaging'
+
+  #GraphQL
+  pod 'Apollo'
 
 
 

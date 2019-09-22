@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class Activity: NSObject {
     // MARK: - Variables And Properties
@@ -17,6 +18,11 @@ class Activity: NSObject {
     var timer = Timer()
     
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+    
+    
+    /// TEMP VARIABLES
+    var beginLat = 0.0
+    var beginLong = 0.0
 
     func loadActivity(_ info: NSDictionary) {
         //        self.id = info["id"] != nil ? info["id"] as? Int : self.id
@@ -29,23 +35,30 @@ class Activity: NSObject {
 
     }
     
+    
     //start time tracking
     func startTracking(){
-        timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(UpdateTimer), userInfo: nil, repeats: true)
+        appDelegate.activity = self
+        appDelegate.isTracking = true
+    
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(UpdateTimer), userInfo: nil, repeats: true)
     }
+    
     
     
     //stop time tracking
     func stopTracking(){
+        self.time = 0.00
         print("STOPPED")
+        appDelegate.activity = nil
+        appDelegate.isTracking = false
         timer.invalidate()
     }
     
     @objc func UpdateTimer() {
         time = time + timer.timeInterval
+        
         NotificationCenter.default.post(name: Notification.Name(Notifications.UPDATE_TIMER), object: nil)
-        
-        
         
         /// *** Flag and Monitoring Logic *** ///
         
@@ -69,16 +82,18 @@ class Activity: NSObject {
         
         //      All Tasks
         // -- No internet, flag it, track locally until internet is available again
-        // -- alert user tracking has ended if force close app with push notification
         
+
         
-        // -- How do we determine when a claim is fully finished ? So cannot be opened up again and tracked.
-      //  -- Add closed claim button in red
-        
+    //    Additional Notes --> We may want to add/edit/remove the activity 'name' from the admin panel down the road -- this could eventually be an ID if we go that route maybe?
+      //  name = "Driving to Destination"
+      //  total elapsed millis = 500000
+        //  geo data (lat/lon/elapsed/flags) = {{lat:124.123,long:-12.313,elapsed:32000,flags ""}}
+     //   notes = "Was some heavy traffic"
         
         //       //
         
     }
-    
+ 
     
 }

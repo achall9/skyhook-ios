@@ -9,7 +9,8 @@
 //**** PENDING APIS -- UserExists, Get Profile, Create Profile --- ****
 
 import UIKit
-import Firebase
+//import Firebase
+import Apollo
 
 class BeginAuthViewController: UIViewController, UITextFieldDelegate {
   
@@ -20,6 +21,8 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var subHeaderLbl: UILabel!
     @IBOutlet weak var headerLbl: UILabel!
     @IBOutlet weak var segmentSwitch: UISegmentedControl!
+    
+    var indicator: UIActivityIndicatorView!
     
     var email: String!
     var password: String!
@@ -38,6 +41,7 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         NSAttributedString.Key.foregroundColor : UIColor.black,
         NSAttributedString.Key.underlineStyle : NSUnderlineStyle.single.rawValue]
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.hideKeyboardWhenTappedAround()
@@ -55,7 +59,10 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         forgotPwBtn.setAttributedTitle(attributeString, for: .normal)
         forgotPwBtn.alpha = 0.0
         errorLbl.alpha = 0.0
-
+        
+        // Must remove at the product version.
+        //self.appDelegate.enterApp(true)
+        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -71,37 +78,18 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         case 0:
             if emailValidated(email: textField.text!) {
                 segmentSwitch.selectedSegmentIndex = 1
-
-                if userExists() {
-                    self.phase = 2 //user exists, allow login
-                    self.textField.text = ""
-                    self.textField.placeholder = "Enter password"
-                    self.textField.isSecureTextEntry = true
-                    self.subHeaderLbl.text = "Enter your password to log back in"
-                    textField.becomeFirstResponder()
-
-                    
-                }
-                else {
-                    self.phase = 1
-                    self.textField.text = ""
-                    self.textField.placeholder = "Create new password"
-                    self.textField.isSecureTextEntry = true
-                    self.subHeaderLbl.text = "Register a password"
-                    textField.becomeFirstResponder()
-
-
-                }
+                self.phase = 1 //user exists, allow login
+                self.textField.text = ""
+                self.textField.placeholder = "Enter your password"
+                self.textField.isSecureTextEntry = true
+//                welcomeUserName() //set name in label welcoming back the user
+                self.subHeaderLbl.text = "Enter your password to log back in"
+                textField.becomeFirstResponder()
             }
+            
             break
             
         case 1:
-            //register new user and take to app
-            if passwordValidated(password: textField.text!) {
-               registerUser(email: self.email , password: self.password)
-            }
-            break
-        case 2:
             //login user
             if passwordValidated(password: textField.text!){
                 loginUser(email: self.email, password: self.password)
@@ -115,14 +103,31 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func userExists() -> Bool {
-        
-        return true
-    }
+//    func welcomeUserName(){
+//        let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)
+//        let userDetailsQuery = UserDetailsQuery()
+//        apollo.fetch(query: userDetailsQuery) { result in
+//            switch result {
+//            case .success(let graphQLResult):
+//                print("SUCESS FOUND")
+//
+//                let resultMap = try! result.get().data?.resultMap
+//                let resultDic = resultMap as NSDictionary?
+//
+//
+//            case .failure(let error):
+//                // deal with network errors here
+//                print("FAILED TO QUERY USERS")
+////                subHeaderLbl.text = result.get().data.ma
+//               // self.subHeaderLbl.text = "Welcome, \(welcomeUserName())"
+//
+//            }
+//        }
+//
+//    }
+ 
     
-    
-    
-    func emailValidated(email:String)->Bool{
+    func emailValidated(email:String)->Bool {
         errorLbl.alpha = 0.0
         
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
@@ -155,70 +160,32 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
     
     
     // Login User //
-    func loginUser(email: String, password: String){
+    func loginUser(email: String, password: String) {
         errorLbl.alpha = 0.0
         self.forgotPwBtn.alpha = 0.0
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] user, error in
-            guard let strongSelf = self else { return }
-            if error != nil {
-                print(error)
-                strongSelf.errorLbl.alpha = 1.0
-                if (error?.localizedDescription.contains("There is no user record corresponding"))!{
-                    strongSelf.errorLbl.text = "No user found with these credentials."
-                    strongSelf.forgotPwBtn.alpha = 1.0
-                }
-              
+
+        showLoading()
+        
+        User.sharedInstance.login(email: email, password: password) { result in
+            self.stopLoading()
+
+            if result { //success
+                self.appDelegate.enterApp(true)
                 
             } else {
-               //success
-               //get profile, login to app
-                
-                //save login instance
-                UserDefaults.standard.setValue(email, forKey: "email")
-                UserDefaults.standard.setValue(password, forKey: "password")
-                
-                
-                strongSelf.appDelegate.enterApp(true)
-
+                self.errorLbl.text = "Login not recognized"
+                self.errorLbl.alpha = 1.0
+                self.forgotPwBtn.alpha = 1.0
             }
+            
         }
         
+      
     }
     
     
     
-    // Register New User //
-
-    func registerUser(email: String, password: String) {
-        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-            // ...
-            if error != nil {
-                print(error)
-                self.errorLbl.alpha = 1.0
-                if error.debugDescription.contains("The email address is already in use"){
-                    self.errorLbl.text = "Account already exists with this email"
-                }
-            } else {
-                var user = authResult?.user
-                //set profile to API  and direct into app
-                
-                
-                
-                
-                
-                
-                //save login instance
-                UserDefaults.standard.setValue(email, forKey: "email")
-                UserDefaults.standard.setValue(password, forKey: "password")
-
-                let secondViewController = self.storyboard?.instantiateViewController(withIdentifier: "EnableNotificationsViewController") as! EnableNotificationsViewController
-                self.navigationController?.pushViewController(secondViewController, animated: true)
-                
-
-            }
-        }
-    }
-    
+  
    
     // Forgot Password //
     @IBAction func forgotPasswordClick(_ sender: Any) {
@@ -236,11 +203,14 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
             let email = alert?.textFields![0] // Force unwrapping because we know it exists.
+            
+            /*
             Auth.auth().sendPasswordReset(withEmail: email!.text!) { error in
                 if error != nil {
                    //no email registered?
                 }
             }
+             */
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
@@ -248,6 +218,20 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
     }
     
     
+    
+    func showLoading() {
+        indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.gray)
+        indicator.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+        indicator.center = self.textField.center
+        self.textField.addSubview(indicator)
+        self.textField.bringSubviewToFront(indicator)
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        indicator.startAnimating()
+    }
+    
+    func stopLoading(){
+        indicator.stopAnimating()
+    }
 
     
 

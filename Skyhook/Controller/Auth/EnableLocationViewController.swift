@@ -15,7 +15,6 @@ class EnableLocationViewController: UIViewController, CLLocationManagerDelegate{
 
     var locationManager: CLLocationManager?
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         

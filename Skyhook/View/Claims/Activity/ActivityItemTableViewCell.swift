@@ -17,6 +17,8 @@ class ActivityItemTableViewCell: UITableViewCell {
 
     var activity: Activity?
     
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         
@@ -61,7 +63,7 @@ class ActivityItemTableViewCell: UITableViewCell {
     @objc private func updateTime(){
         
         let seconds = activity!.time
-        timeLabel.text = timeString(time: seconds)
+        timeLabel.text = timeString(time: seconds) // set time to label
         
     }
     

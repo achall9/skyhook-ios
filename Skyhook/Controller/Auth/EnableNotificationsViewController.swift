@@ -11,6 +11,7 @@ import UserNotifications
 
 class EnableNotificationsViewController: UIViewController {
 
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,14 +27,10 @@ class EnableNotificationsViewController: UIViewController {
                 print("Permission granted: \(granted)") // 3
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    let secondViewController = self.storyboard?.instantiateViewController(withIdentifier: "EnableLocationViewController") as! EnableLocationViewController
-                    self.navigationController?.pushViewController(secondViewController, animated: true)
+                  self.appDelegate.enterApp(true)
                 }
              
-               
         }
-        
-        //
       
     }
     

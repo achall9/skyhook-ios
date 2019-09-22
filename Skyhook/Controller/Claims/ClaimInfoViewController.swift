@@ -11,13 +11,25 @@ import UIKit
 class ClaimInfoViewController: UIViewController {
 
     @IBOutlet weak var scrollView: UIScrollView!
+    @IBOutlet weak var containerView: UIView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        //add subviews
-        let compView: CompanyInfoView = .fromNib()
-        scrollView.addSubview(compView)
+        
+            let compView: CompanyInfoView = .fromNib()
+            compView.frame = CGRect(x: 15 , y: 10, width: self.scrollView.frame.width-30, height: compView.frame.height)
+            compView.layer.cornerRadius = 3
+            compView.layer.borderWidth = 1.0
+            compView.layer.borderColor = UIColor.lightGray.cgColor
+            containerView.addSubview(compView)
+        
+            let contactView: ContactInfoView = .fromNib()
+            contactView.frame = CGRect(x: 15 , y: compView.frame.height + 20, width: self.scrollView.frame.width-30, height: contactView.frame.height)
+            contactView.layer.cornerRadius = 3
+            contactView.layer.borderWidth = 1.0
+            contactView.layer.borderColor = UIColor.lightGray.cgColor
+            containerView.addSubview(contactView)
     }
     
     

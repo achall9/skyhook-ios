@@ -18,6 +18,7 @@ class ActivityDetailViewController: UIViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
     
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
     var activity: Activity?
     var images:[UIImage] = []
@@ -25,7 +26,10 @@ class ActivityDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        activity = Activity()
+        if self.appDelegate.activity?.name == activity?.name {
+            activity = self.appDelegate.activity
+            playButton.setImage(UIImage(named:"stop_large"), for: .normal)
+        }
         
         NotificationCenter.default.addObserver(
             self,

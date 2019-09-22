@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Apollo
 
 class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -38,6 +39,9 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
 //        viewController.claim = claims[indexPath.row]
+        var claim = Claim()
+        claim.status = "OPEN"
+        viewController.claim = claim
         self.navigationController?.pushViewController(viewController, animated: true)
         
     }
@@ -71,5 +75,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
         return cell
     }
+    
+    
 
 }

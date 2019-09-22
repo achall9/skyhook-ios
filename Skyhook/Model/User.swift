@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CoreLocation
+import Apollo
 
 class User: NSObject {
     class var sharedInstance: User {
@@ -18,21 +20,33 @@ class User: NSObject {
     // MARK: - Variables And Properties
     
     var id: String?
-    var name: String?
+    var fullName: String?
     var email: String?
-    var lat: Double?
-    var lng: Double?
+    var roleId: String?
+    var jwt: String?
+    
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+
+    
 
     func loadUser(_ info: NSDictionary) {
 //        self.id = info["id"] != nil ? info["id"] as? Int : self.id
     }
     
+    func loadUser(_ id: String?, _ fullName: String?, _ email: String?, _ role: String?, _ jwt: String?) {
+        self.id = id
+        self.fullName = fullName
+        self.email = email
+        self.roleId = role
+        self.jwt = jwt
+    }
+    
     func initialize() {
         self.id = ""
-        self.name = ""
+        self.fullName = ""
         self.email = ""
-        self.lat = 0.0
-        self.lng = 0.0
+        self.roleId = ""
+        self.jwt = ""
     }
     
     func exists() -> Bool{
@@ -41,12 +55,41 @@ class User: NSObject {
         
     }
     
-    func login (email:String,password:String){
+    func login (email:String, password:String, completion: @escaping (Bool) -> ()) {
         
-        UserDefaults.standard.setValue(email, forKey: "email")
-        UserDefaults.standard.setValue(password, forKey: "password")
+        
+        let loginMutation = LoginUserMutation(email: email, password: password)
+        let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)
+        
+        apollo.perform(mutation: loginMutation) { (result) in
+            
+            let resultMap = try! result.get().data?.resultMap
+            let resultDic = resultMap as NSDictionary?
+            let loginDic = resultDic?.value(forKey: "login") as? NSDictionary
+            
+            if loginDic == nil { // failed
+                completion(false)
+                
+            } else { // SUCCESS
+                
+                let userDic = loginDic?.value(forKey: "user") as? NSDictionary
+                
+                let fullName = userDic?.value(forKey: "fullName") as? String ?? ""
+                let email = userDic?.value(forKey: "email") as? String ?? ""
+                let id = userDic?.value(forKey: "id") as? String ?? ""
+                let role = userDic?.value(forKey: "roleId") as? String ?? ""
+                let jwt = userDic?.value(forKey: "jwt") as? String ?? ""
+                
+                self.loadUser(id, fullName, email, role, jwt)
+                
+                UserDefaults.standard.setValue(email, forKey: "email")
+                UserDefaults.standard.setValue(password, forKey: "password")
+                
+                completion(true)
+                
+            }
+        }
     }
-    
     
     func logout(){
         self.initialize()

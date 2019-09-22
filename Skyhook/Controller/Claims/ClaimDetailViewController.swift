@@ -8,26 +8,42 @@
 
 import UIKit
 
-class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate {
+class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate, SlideButtonDelegate {
+    
    
     @IBOutlet weak var tableView: UITableView!
     
-    var claim: Claim = Claim()
+    var claim: Claim?
+    
+    @IBOutlet weak var closeClaimButton: SlidingButton!
+    
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
     override func viewDidLoad() {
         super.viewDidLoad()
      
-
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ActivityItemTableViewCell", bundle: nil), forCellReuseIdentifier: "ActivityItemTableViewCell")
         
-        
+        closeClaimButton.delegate = self
+       
         setHeader()
         
-
+       
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+       
+    }
+    
+    //Slide Button Delegate
+    func buttonStatus(status: String, sender: SlidingButton) {
+        print(status)
+    }
+    
     
     //claim header info button click -- Delegate function
     func didTapInfo() {
@@ -41,17 +57,14 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
         
         let view = (Bundle.main.loadNibNamed("ClaimHeaderView", owner: self, options: nil)![0] as! ClaimHeaderView)
         view.delegate = self
-
-        claim = Claim()
-        claim.id = "12"
-
-        view.setViews(claim:claim)
+        view.setViews(claim:claim!)
 
         //set headerview to tableview
         tableView.tableHeaderView = view
         
 
     }
+    
     
     
     
@@ -74,6 +87,7 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.deselectRow(at: indexPath, animated: false)
      
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ActivityDetailViewController") as! ActivityDetailViewController
+        viewController.activity = (tableView.cellForRow(at: indexPath) as! ActivityItemTableViewCell).activity
         self.navigationController?.pushViewController(viewController, animated: true)
     
     }
@@ -88,14 +102,33 @@ class ClaimDetailViewController: UIViewController, UITableViewDelegate, UITableV
         let cell = tableView.dequeueReusableCell(withIdentifier: "ActivityItemTableViewCell") as! ActivityItemTableViewCell
      
         if indexPath.row == 0 {
-            let a = Activity()
-            cell.activity = a
+            if appDelegate.activity != nil && (appDelegate.activity?.name?.contains("Driving"))! {
+                cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+                cell.activity = appDelegate.activity
+                cell.nameLabel.text = appDelegate.activity!.name
+
+            } else {
+                let a = Activity()
+                a.name = "Driving to Destination"
+                cell.activity = a
+                cell.nameLabel.text = a.name
+
+            }
+         
+
         }
-        if indexPath.row == 1{
-            let a = Activity()
-            a.time = 30014.00
-            cell.activity = a
-            cell.timeLabel.text = "01:23:14"
+        if indexPath.row == 1 {
+            if appDelegate.activity != nil && (appDelegate.activity?.name?.contains("Met"))! {
+                cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+                cell.activity = appDelegate.activity
+                cell.nameLabel.text = appDelegate.activity!.name
+                
+            } else {
+                let a = Activity()
+                a.name = "Met with Claimant"
+                cell.activity = a
+                cell.nameLabel.text = a.name
+            }
         }
       
 //        cell.activity = claim?.activities[indexPath.row]

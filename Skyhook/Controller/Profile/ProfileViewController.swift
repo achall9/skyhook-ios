@@ -11,6 +11,8 @@ import UIKit
 class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
     
+    var headerView : ProfileHeaderView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
@@ -24,29 +26,32 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func setHeader(){
         
-        let view = (Bundle.main.loadNibNamed("ProfileHeaderView", owner: self, options: nil)![0] as! ProfileHeaderView)
+        headerView = (Bundle.main.loadNibNamed("ProfileHeaderView", owner: self, options: nil)![0] as! ProfileHeaderView)
         
         //profile image circular
-        view.profileImage.layer.masksToBounds = false
-        view.profileImage.layer.cornerRadius = view.profileImage.frame.height/2
-        view.profileImage.clipsToBounds = true
+        headerView.profileImage.layer.masksToBounds = false
+        headerView.profileImage.layer.cornerRadius = headerView.profileImage.frame.height/2
+        headerView.profileImage.clipsToBounds = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.profilePictureTap(_:)))
+        headerView.profileImage.addGestureRecognizer(tap)
         
         // grid views
-        view.view0.layer.masksToBounds = false
-        view.view0.layer.cornerRadius = view.view0.frame.height/2
-       view.view0.clipsToBounds = true
-
-       view.view1.layer.masksToBounds = false
-        view.view1.layer.cornerRadius = view.view1.frame.height/2
-        view.view1.clipsToBounds = true
-
-        view.view2.layer.masksToBounds = false
-        view.view2.layer.cornerRadius = view.view2.frame.height/2
-       view.view2.clipsToBounds = true
-
-       view.view3.layer.masksToBounds = false
-       view.view3.layer.cornerRadius = view.view3.frame.height/2
-       view.view3.clipsToBounds = true
+        headerView.view0.layer.masksToBounds = false
+        headerView.view0.layer.cornerRadius = headerView.view0.frame.height/2
+        headerView.view0.clipsToBounds = true
+        
+        headerView.view1.layer.masksToBounds = false
+        headerView.view1.layer.cornerRadius = headerView.view1.frame.height/2
+        headerView.view1.clipsToBounds = true
+        
+        headerView.view2.layer.masksToBounds = false
+        headerView.view2.layer.cornerRadius = headerView.view2.frame.height/2
+        headerView.view2.clipsToBounds = true
+        
+        headerView.view3.layer.masksToBounds = false
+        headerView.view3.layer.cornerRadius = headerView.view3.frame.height/2
+        headerView.view3.clipsToBounds = true
         
         let yourAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 15),
@@ -54,11 +59,18 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             .underlineStyle: NSUnderlineStyle.single.rawValue]
         let attributeString = NSMutableAttributedString(string: "daniel@threegriffins.com",
                                                         attributes: yourAttributes)
-        view.emailButton.setAttributedTitle(attributeString, for: .normal)
+        headerView.emailButton.setAttributedTitle(attributeString, for: .normal)
         
         //set headerview to tableview
-        tableView.tableHeaderView = view
+        tableView.tableHeaderView = headerView
         
+    }
+    
+    @objc func profilePictureTap(_ sender: UITapGestureRecognizer? = nil) {
+        ImagePickerManager().pickImage(self){ image in
+            //add image to profile
+            self.headerView.profileImage.image = image
+        }
     }
     
     
@@ -70,7 +82,10 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.deselectRow(at: indexPath, animated: false)
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
-        //        viewController.claim = claims[indexPath.row]
+//                viewController.claim = claims[indexPath.row]
+        var claim = Claim()
+        claim.status = "CLOSED"
+        viewController.claim = claim
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
