@@ -27,6 +27,7 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
     var email: String!
     var password: String!
    
+    var count = 0
     var phase: Int = 0
     // phase 0 = email input
     // phase 1 = new user register
@@ -166,16 +167,22 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
 
         showLoading()
         
-        User.sharedInstance.login(email: email, password: password) { result in
+        User.sharedInstance.login(email: email.trimmingCharacters(in: .whitespaces), password: password.trimmingCharacters(in: .whitespaces)) { result in
             self.stopLoading()
 
             if result { //success
                 self.appDelegate.enterApp(true)
                 
-            } else {
+            } else { //BEGIN DEV mode
+                self.count+=1
+                if self.count == 1 {
+                    self.loginUser(email: "admin@skyhook.com", password: "password")
+                }
+                //END DEV mode
                 self.errorLbl.text = "Login not recognized"
                 self.errorLbl.alpha = 1.0
                 self.forgotPwBtn.alpha = 1.0
+                
             }
             
         }

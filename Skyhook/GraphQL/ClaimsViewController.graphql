@@ -1,1 +1,126 @@
 
+
+query ClaimsList {
+    claims {
+      edges {
+         node {
+          id
+          claimNumber
+          claimDate
+          insured {
+           edges {
+               node {
+                     name
+                     phone
+               }
+           }
+          }
+          claimant {
+           edges {
+               node {
+                     name
+                     phone
+               }
+           }
+          }
+          customer {
+            id
+            customerName
+            customerContact
+            phone
+            address {
+                street1
+                street2
+                city
+                state
+                zip
+            }
+          }
+          status
+          activities {
+              edges {
+              node {
+                id
+                name
+                totalElapsedMillis
+                geo
+                flags
+                notes
+              }
+            }
+          }
+        }
+      }
+    }
+}
+
+
+
+mutation CreateActivity($claimId:ID!, $name:String, $status:ActivityStatusInput ) {
+  createActivity(input: {
+    claimId: $claimId,
+    name: $name,
+    status: $status
+  }) {
+    activity {
+      id
+      name
+      totalElapsedMillis
+      geo
+      flags
+      notes
+      status
+      started
+      completed
+    }
+  }
+}
+
+mutation UpdateActivityStart($activityId:ID!) {
+  updateActivityStart(input: { activityId: $activityId }) {
+    activity {
+      id
+    }
+  }
+}
+
+mutation UpdateActivityEnd($activityId:ID!) {
+  updateActivityEnd(input: { activityId: $activityId }) {
+    activity {
+      id
+    }
+  }
+}
+
+mutation UpdateActivityGeoInput($activityId:ID!, $path:String!, $flag:String!) {
+  updateActivityGeo(input: { activityId: $activityId, path: $path, flag: $flag }) {
+    activity {
+      id
+    }
+  }
+}
+
+mutation UpdateNotes($activityId: ID!, $note: String!) {
+  updateActivityNotes(input: {
+    activityId: $activityId,
+    note: $note
+  }) {
+    activity {
+      id
+    }
+  }
+}
+
+mutation ActivityFileUpload($activityId: ID!, $file: Upload!){
+    updateActivityUpload(input: {activityId: $activityId, file: $file}){
+        upload{
+            id
+            path
+            
+        }
+        
+    }
+}
+
+
+

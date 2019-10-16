@@ -8,6 +8,9 @@
 
 import UIKit
 
+protocol ActivityItemDelegate {
+    func didStartActivity()
+}
 
 class ActivityItemTableViewCell: UITableViewCell {
     @IBOutlet weak var view: UIView!
@@ -16,6 +19,9 @@ class ActivityItemTableViewCell: UITableViewCell {
     @IBOutlet weak var playButton: UIButton!
 
     var activity: Activity?
+    
+    var delegate: ActivityItemDelegate?
+
     
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -35,14 +41,19 @@ class ActivityItemTableViewCell: UITableViewCell {
     }
     
     @IBAction func clickPlay(_ sender: Any?) {
+        
         // Begin Play
-        if playButton.currentImage == UIImage(named:"play_small") {
+        if !appDelegate.isTracking {
         
             if let activity = self.activity{
                 
                 playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-
                 activity.startTracking()
+                
+                //show alert to route to destination on driving activity
+                if let name = activity.name, name.contains("Driving") {
+                        delegate?.didStartActivity()
+                }
               
             }
        
@@ -51,8 +62,10 @@ class ActivityItemTableViewCell: UITableViewCell {
         // Stop Play
         else {
             
-            activity?.stopTracking()
-            playButton.setImage(UIImage(named:"play_small"), for: .normal)
+            if appDelegate.activity?.id == self.activity?.id {
+                activity?.stopTracking()
+                playButton.setImage(UIImage(named:"play_small"), for: .normal)
+            }
             
         }
 
@@ -73,6 +86,7 @@ class ActivityItemTableViewCell: UITableViewCell {
         let seconds = Int(time) % 60
         return String(format: "%02i:%02i:%02i" , hours, minutes, seconds)
     }
+    
 
 
     

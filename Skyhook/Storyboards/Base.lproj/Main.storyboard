@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina5_9" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -218,7 +216,6 @@
                                                         <subviews>
                                                             <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="Siq-6n-bKl">
                                                                 <rect key="frame" x="8" y="10" width="181.33333333333334" height="40"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                 <subviews>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="6R2-ou-MCK">
                                                                         <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
@@ -327,7 +324,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="TXp-3S-ud8">
-                                <rect key="frame" x="20" y="158" width="335" height="620"/>
+                                <rect key="frame" x="20" y="158" width="335" height="550"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bqm-5A-9ee">
@@ -416,7 +413,7 @@
                             <constraint firstItem="bqm-5A-9ee" firstAttribute="leading" secondItem="Xkn-an-ht3" secondAttribute="leading" id="Gnq-5p-nHd"/>
                             <constraint firstItem="Xkn-an-ht3" firstAttribute="trailing" secondItem="TXp-3S-ud8" secondAttribute="trailing" constant="20" id="HF5-0m-Nv4"/>
                             <constraint firstItem="TXp-3S-ud8" firstAttribute="leading" secondItem="Xkn-an-ht3" secondAttribute="leading" constant="20" id="J6X-dY-z8P"/>
-                            <constraint firstItem="TXp-3S-ud8" firstAttribute="bottom" secondItem="Xkn-an-ht3" secondAttribute="bottom" id="hBb-4L-Azx"/>
+                            <constraint firstItem="TXp-3S-ud8" firstAttribute="bottom" secondItem="Xkn-an-ht3" secondAttribute="bottom" constant="-70" id="hBb-4L-Azx"/>
                             <constraint firstItem="bqm-5A-9ee" firstAttribute="top" secondItem="uZM-7e-mIO" secondAttribute="top" id="lEB-Hp-dlX"/>
                             <constraint firstItem="wzw-dM-Ruk" firstAttribute="leading" secondItem="Xkn-an-ht3" secondAttribute="leading" constant="20" id="p89-cW-OBb"/>
                             <constraint firstItem="TXp-3S-ud8" firstAttribute="top" secondItem="bqm-5A-9ee" secondAttribute="bottom" constant="28" id="sDC-R3-dai"/>
@@ -427,6 +424,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="YAg-wJ-Lxh"/>
                     <connections>
+                        <outlet property="claimNumberLabel" destination="nqz-LS-w4R" id="JnA-Jl-ayI"/>
                         <outlet property="closeClaimButton" destination="Rc8-JP-0Vw" id="Jy9-74-WwQ"/>
                         <outlet property="tableView" destination="TXp-3S-ud8" id="NOW-tZ-4KL"/>
                     </connections>
@@ -707,7 +705,8 @@
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ha-LL-Env">
                                                 <rect key="frame" x="0.0" y="0.0" width="30.666666666666668" height="30"/>
-                                                <state key="normal" image="start_tracking"/>
+                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="12"/>
+                                                <state key="normal" title="0:00" image="start_tracking"/>
                                                 <connections>
                                                     <action selector="clickedTimerButton:" destination="re7-XP-dOz" eventType="touchUpInside" id="I6d-Ws-2WQ"/>
                                                 </connections>
@@ -760,6 +759,7 @@
                     <navigationItem key="navigationItem" id="dK7-OK-3XL"/>
                     <connections>
                         <outlet property="tableView" destination="dFM-xi-LLL" id="18c-Or-STB"/>
+                        <outlet property="timerButton" destination="3ha-LL-Env" id="afZ-Vs-dHC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1rP-F6-U9c" userLabel="First Responder" sceneMemberID="firstResponder"/>

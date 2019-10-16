@@ -8,7 +8,8 @@
 
 import UIKit
 
-class ActivityDetailViewController: UIViewController {
+class ActivityDetailViewController: BaseViewController {
+    
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var textView: UITextView!
@@ -17,17 +18,13 @@ class ActivityDetailViewController: UIViewController {
     @IBOutlet weak var attachPhotoLabel: UILabel!
     
     @IBOutlet weak var collectionView: UICollectionView!
-    
-    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
-    
-    var activity: Activity?
+        
     var images:[UIImage] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if self.appDelegate.activity?.name == activity?.name {
-            activity = self.appDelegate.activity
+        if appDelegate.activity != nil && appDelegate.activity?.id == claim!.activities[selectedIndex!].id {
             playButton.setImage(UIImage(named:"stop_large"), for: .normal)
         }
         
@@ -39,23 +36,45 @@ class ActivityDetailViewController: UIViewController {
         
         setCollectionView(collection: collectionView)
         
+        
+        //set notes and images
+        self.textView.text = appDelegate.activity?.notes
     }
     
     
     @IBAction func goBack(_ sender: Any) {
-        self.navigationController?.popViewController(animated: false)
+        if claim!.activities[selectedIndex!].notes != "" && claim!.activities[selectedIndex!].notes != textView.text {
+            //text updated -- update server
+            updateNotes()
+       } else {
+            self.navigationController?.popViewController(animated: false)
+        }
+    }
+    
+    func updateNotes(){
+            
+        Activity().updateNotes(activityId: claim!.activities[selectedIndex!].id!, notes: textView.text!) { result in
+                //update activity locally and exit view
+                if result {
+                    self.claim!.activities[self.selectedIndex!].notes = self.textView.text!
+                    self.navigationController?.popViewController(animated: false)
+                } else {
+                    // Failed...
+                    self.showError()
+                }
+            }
+        
     }
     
     @IBAction func playButtonClick(_ sender: Any) {
-        if playButton.currentImage == UIImage(named:"play_large") {
-//            if let activity = self.activity{
-                playButton.setImage(UIImage(named:"stop_large"), for: .normal)
-                activity!.startTracking()
-//            }
+        if !appDelegate.isTracking {
+            playButton.setImage(UIImage(named:"stop_large"), for: .normal)
+            self.appDelegate.activity = claim!.activities[selectedIndex!]
+            self.appDelegate.activity?.startTracking()
         }
             // Stop Play
         else {
-            activity?.stopTracking()
+            self.appDelegate.activity?.stopTracking()
             playButton.setImage(UIImage(named:"play_large"), for: .normal)
         }
 
@@ -65,8 +84,8 @@ class ActivityDetailViewController: UIViewController {
     
     //called from timer
     @objc private func updateTime(){
-        let seconds = activity!.time
-        timeLabel.text = timeString(time: seconds)
+        let seconds = appDelegate.activity?.time
+        timeLabel.text = timeString(time: seconds!)
         
     }
     
@@ -84,8 +103,14 @@ class ActivityDetailViewController: UIViewController {
             //add image to activity
             print("IMAGE SET")
             self.images.append(image)
+            
             self.collectionView.reloadData()
+            
         }
+    }
+    
+    func uploadImage(){
+        
     }
     
 

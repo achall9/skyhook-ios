@@ -24,8 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     var currentLocation: CLLocation?
     
     let gcmMessageIDKey = "gcm.message_id"
-
     
+        
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
@@ -163,7 +163,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     //location tracking
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-       print("Location udpated")
+       print("Location updated")
 
         if let location = locations.last {
 //            print("****** New location is \(location) *******")
@@ -171,16 +171,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             
             print(location.timestamp)
             
+           
+            
             if self.isTracking {
+                
+                // register latest path
+                let pathArr = [self.currentLocation?.coordinate.latitude ?? 0.0, self.currentLocation?.coordinate.longitude ?? 0.0, location.timestamp.millisecondsSince1970] as [Any]
+                           
+                var path = UserDefaults.standard.string(forKey: "path")
+                if path == nil || path == "" {
+                    path = "\(pathArr.description)"
+                } else {
+                    path = "\(path!), \(pathArr.description)"
+                }
+                           
+                UserDefaults.standard.set(path, forKey: "path")
+                
+                
                 //check for cases that could cheat the system
-                timeCheckin(location: location)
+                timeCheckin(location: location, path: path ?? "")
             }
             
         }
         
     }
     
-    func timeCheckin(location:CLLocation) {
+    func timeCheckin(location:CLLocation, path:String) {
         if UserDefaults.standard.object(forKey: "time_check") != nil {
         
             let startTime = (UserDefaults.standard.object(forKey: "time_check") as? Date)!
@@ -192,7 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             //4 minutes passed, validate driving and stationary task
             if diffInMinutes! >= 4 {
                 print("TIMES UP --> Validate Activity")
-                validateUserActivity()
+                validateUserActivity(path:path)
             }
             
         } else {
@@ -204,7 +220,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         }
     }
     
-    func validateUserActivity() {
+    
+    func validateUserActivity(path:String) {
+        
         print("CHECKING DISTANCE MOVED")
         
         if UserDefaults.standard.float(forKey: "lat_check") != nil {
@@ -216,28 +234,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             let distanceInMeters = start.distance(from: self.currentLocation!)
             
             print("DISTANCE TRAVELED: \(distanceInMeters)")
+            
+            var flag = ""
             switch activity?.name {
            
             case "Driving to Destination":
                 // under 100 feet (30 meters) and driving
                 print("DRIVE TASK CONFIRM")
                 if distanceInMeters < 30 {
+                    flag = "NO MOVEMENT DRIVING"
                     self.sendLocalNotification(title:"Driving Activity Flagged",message: "Your location has not moved significantly in over 4 minutes time.")
                 }
                 break
          
             default:
                 if distanceInMeters >= 30 {
+                    // out of 100 foot radius on stationary task.. not good
                     if !(activity?.name?.contains("Driving"))!{
-                        // out of 100 foot radius on stationary task.. not good
+                        flag = "UNAPPROVED MOVEMENT"
                         self.sendLocalNotification(title:"Stationary Activity Flagged",message: "Did you forget to turn off your tracking?")
                     }
                 }
                 break
                 
             }
+            
+            self.activity!.updateGeo(activityId: activity?.id ?? "", path: path, flag: flag) { result in
+                //go to claim view and show new acitvities added
+              
+                if result {
+         
+
+                } else {
+                    // Failed...
+                }
+            }
          
             //Repeat checkin process...
+            UserDefaults.standard.set("", forKey: "path")
             UserDefaults.standard.set(nil, forKey: "time_check")
             UserDefaults.standard.set(0.0, forKey: "lat_check")
             UserDefaults.standard.set(0.0, forKey: "lng_check")

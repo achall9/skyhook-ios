@@ -31,7 +31,12 @@ class ClaimHeaderView: UIView {
         self.claim = claim
         self.layer.borderWidth = 1.0
         self.layer.borderColor = UIColor.lightGray.cgColor
-                
+        
+        self.firmLabel.text = claim.customer?.business ?? ""
+        self.contactNameLabel.text = claim.customer?.fullName ?? ""
+        self.contactPhoneButton.setTitle(claim.customer?.phone, for: .normal)
+        self.contactAddressButton.setTitle(claim.customer?.address?.toString(), for: .normal)
+        
     }
     
     @IBAction func goToDetails(_ sender: Any) {
@@ -53,6 +58,7 @@ class ClaimHeaderView: UIView {
 //        }
         
     }
+    
     @IBAction func clickAddress(_ sender: Any) {
         // go to maps address for navigation if needed
         

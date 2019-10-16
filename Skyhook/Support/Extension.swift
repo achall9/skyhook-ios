@@ -54,3 +54,34 @@ extension UIView {
     }
 }
 
+// PLACE TEXT UNDER BUTTON
+public extension UIButton
+  {
+
+    func alignTextUnderImage(spacing: CGFloat = 6.0)
+    {
+        if let image = self.imageView?.image
+        {
+            let imageSize: CGSize = image.size
+            self.titleEdgeInsets = UIEdgeInsets(top: spacing, left: -imageSize.width, bottom: -(imageSize.height), right: 0.0)
+            let labelString = NSString(string: self.titleLabel!.text!)
+            let titleSize = labelString.size(withAttributes: [NSAttributedString.Key.font: self.titleLabel!.font])
+            self.imageEdgeInsets = UIEdgeInsets(top: -(titleSize.height + spacing), left: 0.0, bottom: 0.0, right: -titleSize.width)
+        }
+    }
+    
+    func alignToNormal(spacing: CGFloat = 0.0)
+       {
+           if let image = self.imageView?.image
+           {
+               let imageSize: CGSize = image.size
+               self.imageEdgeInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+           }
+       }
+}
+
+extension Date {
+    var millisecondsSince1970:Int64 {
+        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    }
+}

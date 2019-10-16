@@ -11,9 +11,12 @@ import UIKit
 class ClaimsTableViewCell: UITableViewCell {
     
     let BORDER_WIDTH: CGFloat = 1.0
-   
+  
+    @IBOutlet weak var insuredNameLabel: UILabel!
+    @IBOutlet weak var claimantNameLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var mainView: UIView!
-    
+    @IBOutlet weak var claimNumberLabel: UILabel!
     @IBOutlet weak var statusView: UIView!
     @IBOutlet weak var statusLabel: UILabel!
     

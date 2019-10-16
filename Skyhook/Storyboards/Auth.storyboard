@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Bsu-le-Mvc">
-    <device id="retina5_9" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Bsu-le-Mvc">
+    <device id="retina5_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,14 +13,14 @@
             <objects>
                 <viewController storyboardIdentifier="BeginAuthViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="XtR-4v-18u" customClass="BeginAuthViewController" customModule="Skyhook" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Vj7-iI-0tO">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7mV-tY-Kad">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="277" translatesAutoresizingMaskIntoConstraints="NO" id="KMz-Po-xm1">
-                                        <rect key="frame" x="3" y="31.666666666666686" width="369" height="748.66666666666652"/>
+                                        <rect key="frame" x="22.666666666666657" y="-6.3333333333333144" width="369" height="748.66666666666652"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="46" translatesAutoresizingMaskIntoConstraints="NO" id="whh-54-P5r">
                                                 <rect key="frame" x="0.0" y="0.0" width="369" height="416.66666666666669"/>
@@ -31,7 +29,7 @@
                                                         <rect key="frame" x="0.0" y="0.0" width="369" height="282"/>
                                                         <subviews>
                                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="p4d-Nd-lKg">
-                                                                <rect key="frame" x="64.666666666666686" y="0.0" width="240" height="128"/>
+                                                                <rect key="frame" x="64.333333333333314" y="0.0" width="240" height="128"/>
                                                                 <subviews>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo-text" translatesAutoresizingMaskIntoConstraints="NO" id="pCh-pG-mqj">
                                                                         <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
@@ -45,17 +43,18 @@
                                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Ib3-yW-GiF">
                                                                 <rect key="frame" x="0.0" y="139" width="369" height="57"/>
                                                                 <subviews>
-                                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Zbo-cI-DJH">
-                                                                        <rect key="frame" x="0.0" y="0.0" width="369" height="28.666666666666668"/>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Zbo-cI-DJH">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="297" height="28.666666666666668"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Welcome to SKYHOOK" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iaQ-vn-FkH">
-                                                                                <rect key="frame" x="0.0" y="4.3333333333333428" width="319" height="20.333333333333332"/>
+                                                                                <rect key="frame" x="0.0" y="4.3333333333333428" width="227" height="20.333333333333332"/>
                                                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="3mJ-B2-4Bs">
-                                                                                <rect key="frame" x="319" y="0.33333333333334281" width="50" height="29"/>
+                                                                                <rect key="frame" x="247" y="0.33333333333334281" width="50" height="29"/>
+                                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="height" constant="28" id="7ww-TC-4Os"/>
                                                                                     <constraint firstAttribute="width" constant="50" id="JD4-IS-plx"/>
@@ -65,6 +64,7 @@
                                                                                     <segment title="" enabled="NO"/>
                                                                                 </segments>
                                                                                 <color key="tintColor" red="0.47684186699999997" green="0.50480759139999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <color key="selectedSegmentTintColor" red="0.47684186699999997" green="0.50480759139999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                             </segmentedControl>
                                                                         </subviews>
                                                                     </stackView>
@@ -86,7 +86,6 @@
                                                                             <constraint firstAttribute="width" constant="367" id="7tu-qG-HvH"/>
                                                                             <constraint firstAttribute="height" constant="50" id="ovi-9H-fQt"/>
                                                                         </constraints>
-                                                                        <nil key="textColor"/>
                                                                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                                         <textInputTraits key="textInputTraits" returnKeyType="continue" textContentType="email"/>
                                                                     </textField>
@@ -131,7 +130,7 @@
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Aph-ba-iSH">
                                                         <rect key="frame" x="0.0" y="0.0" width="369" height="55"/>
-                                                        <color key="backgroundColor" red="0.47684186699999997" green="0.50480759139999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="backgroundColor" red="0.47843137254901957" green="0.50588235294117645" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="55" id="MqZ-pt-jHf"/>
                                                             <constraint firstAttribute="width" constant="369" id="hlf-Kc-gPO"/>
@@ -189,18 +188,18 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="usy-Ua-Nfg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1189.5999999999999" y="-28.078817733990149"/>
+            <point key="canvasLocation" x="1188.4057971014495" y="-28.532608695652176"/>
         </scene>
         <!--Enable Notifications View Controller-->
         <scene sceneID="5T2-Ag-53Q">
             <objects>
                 <viewController storyboardIdentifier="EnableNotificationsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="bKO-Dg-bgj" customClass="EnableNotificationsViewController" customModule="Skyhook" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="U47-Jr-a81">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="198" translatesAutoresizingMaskIntoConstraints="NO" id="hZ7-id-FBP">
-                                <rect key="frame" x="42" y="196" width="291" height="420"/>
+                                <rect key="frame" x="61.666666666666657" y="158" width="291" height="420"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="vzh-W8-lp2">
                                         <rect key="frame" x="0.0" y="0.0" width="291" height="172"/>
@@ -235,7 +234,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="7tQ-XU-aRe">
-                                        <rect key="frame" x="20.666666666666657" y="370" width="249.99999999999997" height="50"/>
+                                        <rect key="frame" x="20.333333333333343" y="370" width="250.00000000000003" height="50"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gmN-pH-7kk">
                                                 <rect key="frame" x="0.0" y="0.0" width="250" height="50"/>
@@ -297,11 +296,11 @@
             <objects>
                 <viewController storyboardIdentifier="EnableLocationViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="TdV-m4-ZS6" customClass="EnableLocationViewController" customModule="Skyhook" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tHA-Rm-bMh">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="bottom" spacing="203" translatesAutoresizingMaskIntoConstraints="NO" id="CB9-2U-1b3">
-                                <rect key="frame" x="58" y="193.66666666666663" width="259" height="425"/>
+                                <rect key="frame" x="77.666666666666686" y="155.66666666666663" width="259" height="425"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="VpW-09-Mgm">
                                         <rect key="frame" x="0.0" y="0.0" width="259" height="172"/>
@@ -319,7 +318,7 @@
                                                 </subviews>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="ah4-PE-Ziu">
-                                                <rect key="frame" x="0.0" y="83.000000000000028" width="259" height="89"/>
+                                                <rect key="frame" x="0.0" y="83" width="259" height="89"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Skyhook requires you to turn on your location for tracking your claim activity." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="x1J-ee-SjR">
                                                         <rect key="frame" x="0.0" y="0.0" width="259" height="89"/>

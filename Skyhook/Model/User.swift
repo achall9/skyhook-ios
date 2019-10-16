@@ -25,14 +25,13 @@ class User: NSObject {
     var roleId: String?
     var jwt: String?
     
+    var business:String?
+    var phone: String?
+    var address: Address?
+    
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
-    
-
-    func loadUser(_ info: NSDictionary) {
-//        self.id = info["id"] != nil ? info["id"] as? Int : self.id
-    }
-    
+   
     func loadUser(_ id: String?, _ fullName: String?, _ email: String?, _ role: String?, _ jwt: String?) {
         self.id = id
         self.fullName = fullName
@@ -40,6 +39,34 @@ class User: NSObject {
         self.roleId = role
         self.jwt = jwt
     }
+    
+    func loadCustomer(customer:NSDictionary) {
+        self.id = customer.value(forKey: "id") as? String
+        self.business = customer.value(forKey: "customerName") as? String
+        self.phone = customer.value(forKey: "phone") as? String
+        self.fullName = customer.value(forKey: "customerContact") as? String
+        
+        if let addrDic = customer.value(forKey: "address") as? NSDictionary {
+            let address = Address()
+            address.loadAddress(info: addrDic)
+            self.address = address
+        }
+    }
+    
+    func loadClaimant(claimant:NSDictionary){
+        self.fullName = claimant.value(forKey: "name") as? String
+        self.phone = claimant.value(forKey: "phone") as? String
+    }
+    
+    func loadInsured(insured:NSDictionary){
+         self.fullName = insured.value(forKey: "name") as? String
+         self.phone = insured.value(forKey: "phone") as? String
+     }
+    
+    func loadAddress(address:NSDictionary) {
+        
+    }
+    
     
     func initialize() {
         self.id = ""
@@ -79,7 +106,6 @@ class User: NSObject {
                 let id = userDic?.value(forKey: "id") as? String ?? ""
                 let role = userDic?.value(forKey: "roleId") as? String ?? ""
                 let jwt = userDic?.value(forKey: "jwt") as? String ?? ""
-                
                 self.loadUser(id, fullName, email, role, jwt)
                 
                 UserDefaults.standard.setValue(email, forKey: "email")

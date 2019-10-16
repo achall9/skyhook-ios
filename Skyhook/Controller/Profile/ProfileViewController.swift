@@ -13,15 +13,36 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     var headerView : ProfileHeaderView!
     
+    var claims: [Claim] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ClaimsTableViewCell", bundle: nil), forCellReuseIdentifier: "ClaimCell")
         
+       
+      
+        self.getClaims()
+        
         //set profile headerview to table
         setHeader()
 
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+    }
+    
+    func getClaims() {
+        Claim.sharedInstance.fetchClaims() { claims in
+            print(claims)
+            self.claims = claims
+            self.tableView.reloadData()
+            self.loadHeaderData()
+                
+        }
     }
     
     func setHeader(){
@@ -53,16 +74,48 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         headerView.view3.layer.cornerRadius = headerView.view3.frame.height/2
         headerView.view3.clipsToBounds = true
         
+        // SET DATA
+        headerView.nameLabel.text = User.sharedInstance.fullName
+
         let yourAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 15),
             .foregroundColor: UIColor.blue,
             .underlineStyle: NSUnderlineStyle.single.rawValue]
-        let attributeString = NSMutableAttributedString(string: "daniel@threegriffins.com",
+        let attributeString = NSMutableAttributedString(string: User.sharedInstance.email ?? "",
                                                         attributes: yourAttributes)
         headerView.emailButton.setAttributedTitle(attributeString, for: .normal)
         
+        
         //set headerview to tableview
         tableView.tableHeaderView = headerView
+        
+    }
+    
+    func loadHeaderData(){ // load ME query next time -- David should add this
+        if headerView == nil {
+            return
+        }
+        var openCount = 0
+        var closedCount = 0
+        var timeLogged = 0
+        var assigned = 0
+        for claim in claims {
+            
+            assigned+=1
+            if claim.status == ClaimStatus.closed {
+                closedCount+=1
+            }
+            if claim.status == ClaimStatus.open {
+                openCount+=1
+            }
+            
+            
+        }
+        
+        headerView.claimOpenLbl.text = String(openCount)
+        headerView.claimClosedLbl.text = String(closedCount)
+        headerView.timeLoggedLbl.text = String(timeLogged)
+        headerView.claimAssignedLbl.text = String(assigned)
         
     }
     
@@ -70,6 +123,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         ImagePickerManager().pickImage(self){ image in
             //add image to profile
             self.headerView.profileImage.image = image
+            
+            //save to server****
         }
     }
     
@@ -83,13 +138,12 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
 //                viewController.claim = claims[indexPath.row]
-        var claim = Claim()
-        claim.status = "CLOSED"
-        viewController.claim = claim
+        viewController.claim = claims[indexPath.row]
+        viewController.claim?.status = ClaimStatus.closed
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        return self.claims.count
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 220

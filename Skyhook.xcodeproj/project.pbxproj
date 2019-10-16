@@ -17,12 +17,12 @@
 		7D01C19D230E1AB7002BB143 /* ActivitySectionHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D01C19C230E1AB7002BB143 /* ActivitySectionHeaderView.xib */; };
 		7D0B6EC223105CF0008735C7 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0B6EC123105CF0008735C7 /* Notifications.swift */; };
 		7D125904231F0187000BABF3 /* ClaimInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D125903231F0187000BABF3 /* ClaimInfoViewController.swift */; };
-		7D19CEE12336C4E8000E177E /* schema.json in Resources */ = {isa = PBXBuildFile; fileRef = 7D19CEE02336C4E8000E177E /* schema.json */; };
 		7D19CEE32336C58F000E177E /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D19CEE22336C58F000E177E /* API.swift */; };
 		7D19CEE52336DCF5000E177E /* ClaimsViewController.graphql in Resources */ = {isa = PBXBuildFile; fileRef = 7D19CEE42336DCF5000E177E /* ClaimsViewController.graphql */; };
 		7D358D18230EF80000B99559 /* ActivityItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D358D16230EF80000B99559 /* ActivityItemTableViewCell.swift */; };
 		7D358D19230EF80000B99559 /* ActivityItemTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D358D17230EF80000B99559 /* ActivityItemTableViewCell.xib */; };
 		7D45FE06230AF3B20092552D /* Claim.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D45FE05230AF3B20092552D /* Claim.swift */; };
+		7D5032FF23550D98003BE94E /* schema.json in Resources */ = {isa = PBXBuildFile; fileRef = 7D5032FE23550D98003BE94E /* schema.json */; };
 		7D55F6EF230817D700714B7A /* ClaimsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D55F6ED230817D700714B7A /* ClaimsTableViewCell.swift */; };
 		7D55F6F0230817D700714B7A /* ClaimsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D55F6EE230817D700714B7A /* ClaimsTableViewCell.xib */; };
 		7D57010C22FCCB7C000AB5A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D57010B22FCCB7C000AB5A6 /* AppDelegate.swift */; };
@@ -33,6 +33,7 @@
 		7D57012C22FCCB7F000AB5A6 /* SkyhookUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D57012B22FCCB7F000AB5A6 /* SkyhookUITests.swift */; };
 		7D57013A22FCCBBD000AB5A6 /* Auth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7D57013922FCCBBD000AB5A6 /* Auth.storyboard */; };
 		7D65A7602309F00700E745A2 /* ClaimDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D65A75F2309F00700E745A2 /* ClaimDetailViewController.swift */; };
+		7D726614234AD5F300056F58 /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D726613234AD5F300056F58 /* Address.swift */; };
 		7D770DE023031E3A00367EBD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D770DDF23031E3A00367EBD /* Constants.swift */; };
 		7D770DE42303236200367EBD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7D770DE32303235D00367EBD /* GoogleService-Info.plist */; };
 		7D91CD1722FCD84800160FCC /* BeginAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D91CD1622FCD84800160FCC /* BeginAuthViewController.swift */; };
@@ -101,12 +102,12 @@
 		7D01C19C230E1AB7002BB143 /* ActivitySectionHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivitySectionHeaderView.xib; sourceTree = "<group>"; };
 		7D0B6EC123105CF0008735C7 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		7D125903231F0187000BABF3 /* ClaimInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimInfoViewController.swift; sourceTree = "<group>"; };
-		7D19CEE02336C4E8000E177E /* schema.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = schema.json; sourceTree = "<group>"; };
 		7D19CEE22336C58F000E177E /* API.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = API.swift; path = Skyhook/API.swift; sourceTree = SOURCE_ROOT; };
 		7D19CEE42336DCF5000E177E /* ClaimsViewController.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = ClaimsViewController.graphql; sourceTree = "<group>"; };
 		7D358D16230EF80000B99559 /* ActivityItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityItemTableViewCell.swift; sourceTree = "<group>"; };
 		7D358D17230EF80000B99559 /* ActivityItemTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ActivityItemTableViewCell.xib; sourceTree = "<group>"; };
 		7D45FE05230AF3B20092552D /* Claim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Claim.swift; sourceTree = "<group>"; };
+		7D5032FE23550D98003BE94E /* schema.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = schema.json; path = Skyhook/schema.json; sourceTree = SOURCE_ROOT; };
 		7D55F6ED230817D700714B7A /* ClaimsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimsTableViewCell.swift; sourceTree = "<group>"; };
 		7D55F6EE230817D700714B7A /* ClaimsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ClaimsTableViewCell.xib; sourceTree = "<group>"; };
 		7D57010822FCCB7C000AB5A6 /* Skyhook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skyhook.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,6 +124,7 @@
 		7D57012D22FCCB7F000AB5A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7D57013922FCCBBD000AB5A6 /* Auth.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Auth.storyboard; sourceTree = "<group>"; };
 		7D65A75F2309F00700E745A2 /* ClaimDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimDetailViewController.swift; sourceTree = "<group>"; };
+		7D726613234AD5F300056F58 /* Address.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
 		7D770DDF23031E3A00367EBD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		7D770DE32303235D00367EBD /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7D91CD1622FCD84800160FCC /* BeginAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginAuthViewController.swift; sourceTree = "<group>"; };
@@ -286,7 +288,7 @@
 				7D57013B22FCD71F000AB5A6 /* Controller */,
 				7D57013C22FCD72E000AB5A6 /* Storyboards */,
 				7D57011222FCCB7E000AB5A6 /* Assets.xcassets */,
-				7D19CEE02336C4E8000E177E /* schema.json */,
+				7D5032FE23550D98003BE94E /* schema.json */,
 				7D770DE32303235D00367EBD /* GoogleService-Info.plist */,
 				7D57011722FCCB7E000AB5A6 /* Info.plist */,
 			);
@@ -314,7 +316,6 @@
 		7D57013B22FCD71F000AB5A6 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				7DB31316231DF9A000015B2C /* BaseViewController.swift */,
 				7DA69A2923049018005EBF05 /* MainViewController.swift */,
 				7DA69A2D2304936A005EBF05 /* Notifications */,
 				7DB947382306220F00C849EE /* Settings */,
@@ -348,6 +349,7 @@
 		7D91CD1422FCD7F700160FCC /* Claims */ = {
 			isa = PBXGroup;
 			children = (
+				7DB31316231DF9A000015B2C /* BaseViewController.swift */,
 				7DA69A2723048FF9005EBF05 /* ClaimsViewController.swift */,
 				7D65A75F2309F00700E745A2 /* ClaimDetailViewController.swift */,
 				7D125903231F0187000BABF3 /* ClaimInfoViewController.swift */,
@@ -387,6 +389,7 @@
 				7D01C196230E15FB002BB143 /* Activity.swift */,
 				7D01C198230E1614002BB143 /* ActivitySection.swift */,
 				7D0B6EC123105CF0008735C7 /* Notifications.swift */,
+				7D726613234AD5F300056F58 /* Address.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -585,10 +588,10 @@
 				7DA4634A231FF9620095FBDA /* ContactInfoView.xib in Resources */,
 				A58E323123328EF000949101 /* BeginAuthViewController.graphql in Resources */,
 				7D55F6F0230817D700714B7A /* ClaimsTableViewCell.xib in Resources */,
+				7D5032FF23550D98003BE94E /* schema.json in Resources */,
 				7D770DE42303236200367EBD /* GoogleService-Info.plist in Resources */,
 				7DD96BE4230AC47F003142FA /* ClaimHeaderView.xib in Resources */,
 				7D57011322FCCB7E000AB5A6 /* Assets.xcassets in Resources */,
-				7D19CEE12336C4E8000E177E /* schema.json in Resources */,
 				7D57011122FCCB7D000AB5A6 /* Main.storyboard in Resources */,
 				7D358D19230EF80000B99559 /* ActivityItemTableViewCell.xib in Resources */,
 				7DD134372309DB9E009EE8F3 /* ProfileHeaderView.xib in Resources */,
@@ -760,6 +763,7 @@
 				7D01C197230E15FB002BB143 /* Activity.swift in Sources */,
 				7D91CD1722FCD84800160FCC /* BeginAuthViewController.swift in Sources */,
 				7DBE4EF02313F707005F1E37 /* EnableNotificationsViewController.swift in Sources */,
+				7D726614234AD5F300056F58 /* Address.swift in Sources */,
 				7D01C19B230E1AA3002BB143 /* ActivitySectionHeaderView.swift in Sources */,
 				7D57010C22FCCB7C000AB5A6 /* AppDelegate.swift in Sources */,
 				7DD96BE2230AC468003142FA /* ClaimHeaderView.swift in Sources */,
@@ -950,6 +954,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Skyhook/Skyhook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U55S7N6YRF;
 				INFOPLIST_FILE = Skyhook/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
@@ -971,6 +976,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Skyhook/Skyhook.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U55S7N6YRF;
 				INFOPLIST_FILE = Skyhook/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;

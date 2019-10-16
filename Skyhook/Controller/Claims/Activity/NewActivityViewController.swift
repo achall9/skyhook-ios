@@ -8,14 +8,12 @@
 
 import UIKit
 
-class NewActivityViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
+class NewActivityViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource{
 
     @IBOutlet weak var activityNameField: UITextField!
     @IBOutlet weak var tableView: UITableView!
 
     var section: [ActivitySection] = []
-    
-    var claim: Claim?
     
     
     override func viewDidLoad() {
@@ -66,15 +64,24 @@ class NewActivityViewController: UIViewController, UITableViewDelegate, UITableV
             //no input, don't allow
             return
         }
-        createActivity()
+        createActivity(activity:(activityNameField.text?.trimmingCharacters(in: .whitespaces))!)
         
     }
 
     
-    func createActivity(){
+    func createActivity(activity:String){
         
-        //go to claim view and show new acitvities added
-        self.navigationController?.popViewController(animated: false)
+        Activity().createNew(claimId: (self.claim?.id!)!, name: activity, status: ActivityStatusInput.pending) { activity in
+            //go to claim view and show new acitvities added
+            if activity != nil {
+                self.claim?.activities.append(activity!)
+                self.navigationController?.popViewController(animated: false)
+
+            } else {
+                // Failed...
+                self.showError()
+            }
+        }
 
     }
     
@@ -143,7 +150,6 @@ class NewActivityViewController: UIViewController, UITableViewDelegate, UITableV
             }
             break
         case 1:
-            
             if indexPath.row == 0 {
                 cell.label.text = "First Contact"
             }
@@ -190,11 +196,17 @@ class NewActivityViewController: UIViewController, UITableViewDelegate, UITableV
         if indexPath.section == 2 && indexPath.row == 5 { // set custom activity
             allowCustomActivity()
         }
-        else {
             
-            //add activty to claim, go back to claim view
-            createActivity()
+        else {
+            let cell = tableView.cellForRow(at: indexPath) as? ActivityTableViewCell
+            
+            //add activity to claim, go back to claim view
+            createActivity(activity: cell!.label.text!)
         }
     }
     
+    
+    
+    
 }
+
