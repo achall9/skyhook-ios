@@ -9,7 +9,7 @@
 import UIKit
 import Apollo
 
-class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FilterClickDelegate  {
     
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
@@ -21,6 +21,8 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     @IBOutlet weak var timerButton: UIButton!
     
+    var filterView: ClaimFilterView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,13 +31,14 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ClaimsTableViewCell", bundle: nil), forCellReuseIdentifier: "ClaimCell")
         
-        self.getClaims()
-                
+                      
         NotificationCenter.default.addObserver(
                self,
                selector: #selector(self.updateTime),
                name: NSNotification.Name(rawValue: Notifications.UPDATE_TIMER),
                object: nil)
+        
+        self.getClaims(filter:-1)
 
          
     }
@@ -47,19 +50,23 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             self.timerButton.alpha = 1.0
 
             self.timerButton.alignTextUnderImage()
-            self.timerButton.setTitle(timeString(time: appDelegate.activity!.time), for: .normal)
+            self.timerButton.setTitle(timeString(time: appDelegate.activity!.totalElapsedMillis), for: .normal)
         } else {
             self.timerButton.alpha = 0.0
             self.timerButton.alignToNormal()
             self.timerButton.setTitle("", for: .normal)
         }
+        
     }
     
     @objc func updateTime(){
-        self.timerButton.setTitle(timeString(time: appDelegate.activity!.time), for: .normal)
+        if let activity = appDelegate.activity {
+              self.timerButton.setTitle(timeString(time: appDelegate.activity!.totalElapsedMillis), for: .normal)
+        }
+      
     }
     
-    func timeString(time:TimeInterval) -> String {
+    func timeString(time:Int) -> String {
            let hours = Int(time) / 3600
            let minutes = Int(time) / 60 % 60
            let seconds = Int(time) % 60
@@ -68,18 +75,64 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
        
     
     // get claims assigned to current user
-    func getClaims(){
+    func getClaims(filter:Int){
        self.showLoading()
    
         Claim.sharedInstance.fetchClaims() { claims in
+            self.claims.removeAll()
             self.stopLoading()
-            self.claims = claims
+            
+            switch filter {
+            case 0:
+                var sorted = claims
+                sorted.sort(by: { $0.claimDate!.compare($1.claimDate!) == .orderedDescending})
+                for claim in sorted {
+                    if claim.status != .closed {
+                        self.claims.append(claim)
+                    }
+                }
+
+                break
+            case 1:
+                var sorted = claims
+                sorted.sort(by: { $0.dueDate!.compare($1.dueDate!) == .orderedAscending})
+                
+                for claim in sorted {
+                    if claim.status != .closed {
+                        self.claims.append(claim)
+                    }
+                }
+                break
+            default:
+                for claim in claims {
+                    if claim.status != .closed {
+                        self.claims.append(claim)
+                    }
+                }
+                break
+            }
+//            self.claims = claims
             self.tableView.reloadData()
         }
     }
     
     @IBAction func showFilterOptions(_ sender: Any) {
+        // Set Company View for GBIC and IA Firm
+        filterView = .fromNib()
+        filterView.frame = CGRect(x: self.view.frame.width - filterView.frame.width-10 , y: 50, width: filterView.frame.width, height: filterView.frame.height)
+        filterView.layer.cornerRadius = 3
+        filterView.setBorders()
+        filterView.delegate = self
+        
+        self.view.addSubview(filterView)
 
+    }
+    
+    func didClickFilter(value:Int){
+        if filterView != nil {
+            filterView.removeFromSuperview()
+        }
+        self.getClaims(filter:value)
     }
     
     @IBAction func clickedTimerButton(_ sender: Any) {
@@ -118,26 +171,24 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ClaimCell") as! ClaimsTableViewCell
                 
-        switch(claims[indexPath.row].status) {
-        case .open:
-            cell.statusLabel.text = "OPEN"
-            cell.statusView.backgroundColor = ColorUtils.getRedColor()
-            break
-        case .active:
-                cell.statusLabel.text = "ACTIVE"
-            cell.statusView.backgroundColor = ColorUtils.getOrangeColor()
-            break
-        default:
-            cell.statusLabel.text = "CLOSED"
-            cell.statusView.backgroundColor = ColorUtils.getGreenColor()
-            break
+        cell.statusView.layer.borderWidth = 0.0
+        cell.statusLabel.text = "ACTIVE"
+        cell.statusView.backgroundColor = ColorUtils.getOrangeColor()
+        for act in claims[indexPath.row].activities {
+            if act.status == .started {
+                cell.statusView.layer.borderWidth = 2.0
+                cell.statusView.layer.borderColor = ColorUtils.getGreenColor().cgColor
+                cell.statusView.pulsate()
+            }
         }
-        
+       
+   
         cell.claimNumberLabel.text = claims[indexPath.row].claimNumber
         cell.claimantNameLabel.text = claims[indexPath.row].claimant?.fullName
         cell.insuredNameLabel.text = claims[indexPath.row].insured?.fullName
-
+        
         cell.dateLabel.text = claims[indexPath.row].claimDate?.description
+        
         
         return cell
     }

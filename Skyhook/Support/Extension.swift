@@ -52,6 +52,26 @@ extension UIView {
     class func fromNib<T: UIView>() -> T {
         return Bundle.main.loadNibNamed(String(describing: T.self), owner: nil, options: nil)![0] as! T
     }
+    
+    func pulsate() {
+        let pulse = CASpringAnimation(keyPath: "transform.scale")
+        
+        pulse.duration = 0.4
+   
+        pulse.fromValue = 0.98
+    
+        pulse.toValue = 1.0
+    
+        pulse.autoreverses = true
+    
+        pulse.repeatCount = .infinity
+   
+        pulse.initialVelocity = 0.5
+   
+        pulse.damping = 1.0
+    
+        layer.add(pulse, forKey: nil)
+    }
 }
 
 // PLACE TEXT UNDER BUTTON
@@ -84,4 +104,5 @@ extension Date {
     var millisecondsSince1970:Int64 {
         return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
     }
+    
 }

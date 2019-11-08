@@ -69,9 +69,9 @@ class NewActivityViewController: BaseViewController, UITableViewDelegate, UITabl
     }
 
     
-    func createActivity(activity:String){
+    func createActivity(activity:String) {
         
-        Activity().createNew(claimId: (self.claim?.id!)!, name: activity, status: ActivityStatusInput.pending) { activity in
+        Activity().createNew(claimId: (self.claim?.id!)!, name: activity) { activity in
             //go to claim view and show new acitvities added
             if activity != nil {
                 self.claim?.activities.append(activity!)
@@ -79,7 +79,7 @@ class NewActivityViewController: BaseViewController, UITableViewDelegate, UITabl
 
             } else {
                 // Failed...
-                self.showError()
+                self.showError(message:"Failed to create new activity. Please try again later.")
             }
         }
 

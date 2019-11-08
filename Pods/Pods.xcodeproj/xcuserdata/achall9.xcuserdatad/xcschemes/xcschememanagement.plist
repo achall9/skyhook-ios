@@ -81,33 +81,40 @@
 			<key>orderHint</key>
 			<integer>9</integer>
 		</dict>
-		<key>Pods-Skyhook.xcscheme</key>
+		<key>MTSlideToOpen.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>13</integer>
+			<integer>12</integer>
 		</dict>
-		<key>Pods-SkyhookTests.xcscheme</key>
+		<key>Pods-Skyhook.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>14</integer>
 		</dict>
-		<key>Pods-SkyhookUITests.xcscheme</key>
+		<key>Pods-SkyhookTests.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>15</integer>
 		</dict>
-		<key>Protobuf.xcscheme</key>
+		<key>Pods-SkyhookUITests.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
 			<integer>16</integer>
+		</dict>
+		<key>Protobuf.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+			<key>orderHint</key>
+			<integer>17</integer>
 		</dict>
 		<key>leveldb-library.xcscheme</key>
 		<dict>
@@ -121,7 +128,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>12</integer>
+			<integer>13</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>

@@ -13,186 +13,239 @@ import Apollo
 class Activity: NSObject {
     // MARK: - Variables And Properties
 
-    enum Status {
-              case PENDING
-              case STARTED
-              case COMPLETE
-    }
-    
-    var id: String?
-    var name: String?
+    var id:String?
+    var name:String?
     var totalElapsedMillis:Int = 0
     var flags:String = ""
     var notes:String = ""
-//    var file = nil
-
-    var time: Double = 0.00
-    var timer = Timer()
-    
-    var file: GraphQLFile?
-    
-    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
-    
-    
+    var file:String = ""
+    var status:ActivityStatus?
+        
     /// TEMP VARIABLES
     var beginLat = 0.0
     var beginLong = 0.0
+    
+    var timer: Timer?
+    
+    let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
     func loadActivity(_ info: NSDictionary) {
         self.id = info.value(forKey: "id") as? String
         self.name = info.value(forKey: "name") as? String
-        self.totalElapsedMillis = info.value(forKey: "totalElapsedMillis") as? Int ?? 0
+        self.totalElapsedMillis = (info.value(forKey: "totalElapsedMillis") as? Int ?? 0)/1000 //convert to seconds
         self.flags = info.value(forKey: "flags") as? String ?? ""
         self.notes = info.value(forKey: "notes") as? String ?? ""
+        self.status = info.value(forKey: "status") as? ActivityStatus
+        
     }
+    
+    
     
     func initialize() {
         self.id = ""
         self.name = ""
-        self.time = 0.00
-
+        self.totalElapsedMillis = 0
+        self.flags = ""
+        self.notes = ""
     }
     
     
-    //start time tracking
-    func startTracking(){
-        print("START")
-        
-        //Repeat checkin process...
-           UserDefaults.standard.set("", forKey: "path")
-           UserDefaults.standard.set(nil, forKey: "time_check")
-           UserDefaults.standard.set(0.0, forKey: "lat_check")
-           UserDefaults.standard.set(0.0, forKey: "lng_check")
-        
-           self.updateStart(activityId: self.id ?? "") { result in
-           
-               if result {
-                // SUCCESS - started tracking
-                self.appDelegate.activity = self
-                self.appDelegate.isTracking = true
+    @objc func UpdateTimer() {
+        totalElapsedMillis = totalElapsedMillis + Int(timer!.timeInterval)
+          
+          NotificationCenter.default.post(name:
+              Notification.Name(Notifications.UPDATE_TIMER), object: nil)
+          
+      }
+      
+    
+    
+    func createNew (claimId:String, name:String, completion: @escaping (Activity?) -> ()) {
+          var type:ActivityType = .onsite
+          if name.contains("Driv") {
+              type = .travel
+          }
+          let activityMutation = CreateActivityMutation(claimId:claimId, name:name, status: .pending, type: type)
+          
+             let apollo: ApolloClient = {
+                        let token = User.sharedInstance.jwt
+                        let configuration = URLSessionConfiguration.default
+
+                        // Add additional headers as needed
+                        configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+                        let url = URL(string: GraphQL.ENDPOINT)!
+
+                        //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
+                        let session = URLSession(configuration: configuration)
+                        return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+                    }()
+          
+             apollo.perform(mutation: activityMutation) { (result) in
                  
-                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
-                
-               } else {
-                   // Failed...
-                    
-               }
-           }
+                 let resultMap = try! result.get().data?.resultMap
+                 let resultDic = resultMap as NSDictionary?
 
+              if resultDic == nil { // FAILED
+                     completion(nil)
+                     
+                 } else { // SUCCESS
+                  
+                     let createDic = resultDic?.value(forKey: "createActivity") as? NSDictionary
+                  
+                     let resultActivity = createDic?.value(forKey: "activity") as? NSDictionary
 
+                     let activity = Activity()
+                     activity.loadActivity(resultActivity!)
+                  
+                     completion(activity)
+                  
+                 }
+             }
+         }
+      
+      
+
+    //start time tracking
+    func startTracking(completion: @escaping (Bool) -> ()) {
+        //Repeat checkin process...
+        UserDefaults.standard.set("", forKey: "path")
+        UserDefaults.standard.set(nil, forKey: "time_check")
+        UserDefaults.standard.set(0.0, forKey: "lat_check")
+        UserDefaults.standard.set(0.0, forKey: "lng_check")
+        UserDefaults.standard.set(self.id, forKey: "actId")
+        UserDefaults.standard.synchronize()
+        
+        if self.status == .paused {
+            // START AFTER PAUSE
+            self.updatePause(activityId: self.id ?? "", pause: false) { result in
+                         
+                             if result {
+                              print("STARTED AGAIN")
+
+                              // SUCCESS - started tracking
+                              self.appDelegate.activity = self
+                              self.appDelegate.isTracking = true
+                               
+                              self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
+                              
+                               completion(true)
+                              
+                             } else {
+                                  // Failed...
+                                  completion(false)
+                             }
+                         }
+            
+        }
+        /// NEW START
+        else if self.status == .pending {
+            
+            self.updateStart(activityId: self.id ?? "") { result in
+                 
+                     if result {
+                      print("STARTED")
+
+                      // SUCCESS - started tracking
+                      self.appDelegate.activity = self
+                      self.appDelegate.isTracking = true
+                       
+                      self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
+                      
+                      completion(true)
+                      
+                     } else {
+                          // Failed...
+                          completion(false)
+                     }
+                 }
+        } else {
+            completion(false)
+        }
+        
+     
      
     }
     
+    func continueTracking(){
+        //Repeat checkin process...
+        UserDefaults.standard.set("", forKey: "path")
+        UserDefaults.standard.set(nil, forKey: "time_check")
+        UserDefaults.standard.set(0.0, forKey: "lat_check")
+        UserDefaults.standard.set(0.0, forKey: "lng_check")
+        
+        self.appDelegate.activity = self
+                    
+        self.appDelegate.isTracking = true
+                         
+        self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
+    }
     
     
     //stop time tracking
-    func stopTracking(){
+    func pauseTracking(id: String, pause:Bool, flag: String, completion: @escaping (Bool) -> ()) {
         
-        self.updateStop(activityId: self.id ?? "") { result in
+        let path = UserDefaults.standard.string(forKey: "path")
         
+        self.updateGeo(activityId: id, path: path ?? "", flag: flag) { result in
+                                   
             if result {
-             // SUCCESS - started tracking
-                self.time = 0.00
-                print("STOP")
-                self.appDelegate.activity = nil
-                self.appDelegate.isTracking = false
-                self.timer.invalidate()
-                 
-                  
-                //Repeat tracking checkin process...
-                UserDefaults.standard.set("", forKey: "path")
-                UserDefaults.standard.set(nil, forKey: "time_check")
-                UserDefaults.standard.set(0.0, forKey: "lat_check")
-                UserDefaults.standard.set(0.0, forKey: "lng_check")
-             
+                //updated geo now can stop activity
+                             
+                print("PAUSING")
+                self.updatePause(activityId: id, pause: pause) { result in
+                                                                                        
+                    if result {
+                                                                   
+                        //end background mode
+                        print("DATA SUBMITTED")
+                                                  
+                        self.status = .paused
+                                                
+                        // SUCCESS - paused tracking
+                                                
+                        print("PAUSED")
+                    
+                        //cache management
+                        UserDefaults.standard.set("", forKey: "actId")
+                                                
+                        self.appDelegate.activity = nil
+                                                    
+                        self.appDelegate.isTracking = false
+                              
+                        if let timer = self.timer {
+                            timer.invalidate()
+                        }
+                                                                    
+                        //Repeat checkin process...
+                        UserDefaults.standard.set("", forKey: "path")
+                        UserDefaults.standard.set(nil, forKey: "time_check")
+                        UserDefaults.standard.set(0.0, forKey: "lat_check")
+                        UserDefaults.standard.set(0.0, forKey: "lng_check")
+                        
+                        completion(true)
+                                                                                     
+                    } else {
+                        // Failed...
+                        completion(false)
+
+                    }
+                                  
+                }
+                               
+                    
             } else {
+                                 
                 // Failed...
-                 
+                               
+                completion(false)
+                // DO NOT RESET THE SAVED DATA.
+                                     
             }
+                                 
         }
-      
+                        
     }
     
-    @objc func UpdateTimer() {
-        time = time + timer.timeInterval
-        
-        NotificationCenter.default.post(name:
-            Notification.Name(Notifications.UPDATE_TIMER), object: nil)
-        
-        /// *** Flag and Monitoring Logic *** ///
-        
-        //every 5 seconds push location coordinates to api to track user's route to destination -- display this on web portal
-        
-       // if i %% 5 {
-       //send user share instance lat and long
-  //  }
-        
-        //when receive location data Check for these:
-        
-        //      Driving Task
-        //      - driving task on and stationary for > 4 minutes, flag it.
-        //      - driving task on 10 minutes longer than estimated maps time, flag it
-        //      - location is not relative to driving zone -- same state? , flag it
-        
-        //      Non-Driving Task
-        //      - stationary task and movement > 0.25 miles, flag it,  send push 'Did you forget to //turn off your tracking?'
-        //     - location is not relative to insured/claimant data, flag it
-        //
-        
-        //      All Tasks
-        // -- No internet, flag it, track locally until internet is available again
-        
-
-        
-    //    Additional Notes --> We may want to add/edit/remove the activity 'name' from the admin panel down the road -- this could eventually be an ID if we go that route maybe?
-      //  name = "Driving to Destination"
-      //  total elapsed millis = 500000
-        //  geo data (lat/lon/elapsed/flags) = {{lat:124.123,long:-12.313,elapsed:32000,flags ""}}
-     //   notes = "Was some heavy traffic"
-        
-        //       //
-        
-    }
-    
-
-
-    func createNew (claimId:String, name:String, status: ActivityStatusInput, completion: @escaping (Activity?) -> ()) {
-           
-        
-        let activityMutation = CreateActivityMutation(claimId:claimId, name:name, status: status)
-        
-           let apollo: ApolloClient = {
-                      let token = User.sharedInstance.jwt
-                      let configuration = URLSessionConfiguration.default
-
-                      // Add additional headers as needed
-                      configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
-                      let url = URL(string: GraphQL.ENDPOINT)!
-
-                      //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
-                      let session = URLSession(configuration: configuration)
-                      return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
-                  }()
-        
-           apollo.perform(mutation: activityMutation) { (result) in
-               
-               let resultMap = try! result.get().data?.resultMap
-               let resultDic = resultMap as NSDictionary?
-
-            if resultDic == nil { // FAILED
-                   completion(nil)
-                   
-               } else { // SUCCESS
-                   let createDic = resultDic?.value(forKey: "createActivity") as? NSDictionary
-                   let resultActivity = createDic?.value(forKey: "activity") as? NSDictionary
-
-                   let activity = Activity()
-                   activity.loadActivity(resultActivity!)
-                   completion(activity)
-                
-               }
-           }
-       }
     
     
     func updateStart(activityId: String, completion: @escaping (Bool) -> ()){
@@ -204,16 +257,57 @@ class Activity: NSObject {
                                        
             let configuration = URLSessionConfiguration.default
 
-                                      
             // Add additional headers as needed
-                                      
             configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
                                       
             let url = URL(string: GraphQL.ENDPOINT)!
-
-                                      
-            //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
+                      
+            let session = URLSession(configuration: configuration)
                                         
+            return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+                                 
+        }()
+
+        apollo.perform(mutation: updateMutation) { (result) in
+            print(result)
+            let resultMap = try! result.get().data?.resultMap
+            let resultDic = resultMap as NSDictionary?
+            
+            switch result {
+                case .success(let graphQLResult):
+                    print(graphQLResult)
+                    let res = resultDic!["updateActivityStart"] as? NSDictionary
+                    let success = res!["success"] as? Bool
+                    if success! {
+                        completion(true)
+
+                    } else {
+                        completion(false)
+                    }
+                case .failure(let error):
+                    print("error: \(error)")
+                    completion(false)
+
+            }
+                              
+        }
+        
+    }
+    
+    
+    func updatePause(activityId: String, pause: Bool, completion: @escaping (Bool) -> ()){
+        
+        let updateMutation = UpdateActivityPauseMutation(activityId: activityId, pause: pause)
+        let apollo: ApolloClient = {
+                                            
+            let token = User.sharedInstance.jwt
+                                       
+            let configuration = URLSessionConfiguration.default
+
+            // Add additional headers as needed
+            configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+                                      
+            let url = URL(string: GraphQL.ENDPOINT)!
             let session = URLSession(configuration: configuration)
                                         
             return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
@@ -222,28 +316,22 @@ class Activity: NSObject {
 
                               
         apollo.perform(mutation: updateMutation) { (result) in
+            switch result {
+                case .success(let graphQLResult):
+                    print(graphQLResult)
+                    completion(true)
+                case .failure(let error):
+                    print("error: \(error)")
+                    completion(false)
 
-                              
-            let resultMap = try! result.get().data?.resultMap
-                              
-            let resultDic = resultMap as NSDictionary?
-                                     
-                                
-            if resultDic == nil { // FAILED
-                                
-                completion(false)
-                                  
-            } else { // SUCCESS
-                                  
-                completion(true)
-                                  
             }
-                              
         }
         
     }
     
-        func updateStop(activityId: String, completion: @escaping (Bool) -> ()){
+      
+    
+    func updateStop(activityId: String, completion: @escaping (Bool) -> ()){
         
         let updateMutation = UpdateActivityEndMutation(activityId: activityId)
         let apollo: ApolloClient = {
@@ -253,14 +341,9 @@ class Activity: NSObject {
             let configuration = URLSessionConfiguration.default
 
             // Add additional headers as needed
-                                      
             configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
                                       
             let url = URL(string: GraphQL.ENDPOINT)!
-
-                                      
-            //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
-                                        
             let session = URLSession(configuration: configuration)
                                         
             return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
@@ -269,21 +352,28 @@ class Activity: NSObject {
 
                               
         apollo.perform(mutation: updateMutation) { (result) in
-
-                              
             let resultMap = try! result.get().data?.resultMap
-                              
             let resultDic = resultMap as NSDictionary?
-                                     
-            if resultDic == nil { // FAILED
                                 
+            switch result {
+                   
+            case .success(let graphQLResult):
+                        
+                print(graphQLResult)
+                let res = resultDic!["updateActivityEnd"] as? NSDictionary
+                let success = res!["success"] as? Bool
+                            
+                if success! {
+                    completion(true)
+                    
+                } else {
+                    completion(false)
+                }
+                     
+            case .failure(let error):
+                print("error: \(error)")
                 completion(false)
-                                  
-            } else { // SUCCESS
-                completion(true)
-                                  
             }
-                              
         }
         
     }
@@ -292,7 +382,6 @@ class Activity: NSObject {
         
         let updateMutation = UpdateActivityGeoInputMutation(activityId: activityId, path: path, flag: flag)
 
-        print(path)
         let apollo: ApolloClient = {
         let token = User.sharedInstance.jwt
         
@@ -308,15 +397,17 @@ class Activity: NSObject {
         }()
 
         apollo.perform(mutation: updateMutation) { (result) in
-
-            let resultMap = try! result.get().data?.resultMap
-            let resultDic = resultMap as NSDictionary?
-                                   
-            if resultDic == nil { // FAILED
-                    completion(false)
-                } else { // SUCCESS
+            
+            switch result {
+                case .success(let graphQLResult):
+                    print(graphQLResult)
                     completion(true)
-                }
+                case .failure(let error):
+                    print("error: \(error)")
+                    completion(false)
+
+            }
+         
         }
 
     }
@@ -340,21 +431,56 @@ class Activity: NSObject {
         }()
 
         apollo.perform(mutation: updateMutation) { (result) in
-
-            let resultMap = try! result.get().data?.resultMap
-            let resultDic = resultMap as NSDictionary?
                                    
-            if resultDic == nil { // FAILED
-                    completion(false)
-                } else { // SUCCESS
-                    completion(true)
-                }
+            switch result {
+                    case .success(let graphQLResult):
+                        print(graphQLResult)
+                         if graphQLResult.errors != nil && graphQLResult.errors!.count > 0 {
+                            completion(false)
+                         } else {
+                            completion(true)
+                        }
+                    case .failure(let error):
+                        print("error: \(error)")
+                        completion(false)
+            }
+            
         }
 
     }
     
     
-    func uploadFile(){
+    func uploadFile(activityId: String, file: String, completion: @escaping (Bool) -> ()){
+        
+        let updateMutation = ActivityFileUploadMutation(activityId: activityId, file: file)
+
+              let apollo: ApolloClient = {
+              let token = User.sharedInstance.jwt
+              
+              let configuration = URLSessionConfiguration.default
+
+              // Add additional headers as needed
+              configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+              let url = URL(string: GraphQL.ENDPOINT)!
+
+              //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
+             let session = URLSession(configuration: configuration)
+              return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+              }()
+
+              apollo.perform(mutation: updateMutation) { (result) in
+                                         
+                  switch result {
+                          case .success(let graphQLResult):
+                              print(graphQLResult)
+                              completion(true)
+                          case .failure(let error):
+                              print("error: \(error)")
+                              completion(false)
+                  }
+                  
+              }
+
         
     }
  

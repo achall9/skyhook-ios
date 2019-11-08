@@ -15,13 +15,13 @@ class ImagePickerManager: NSObject, UIImagePickerControllerDelegate, UINavigatio
     var picker = UIImagePickerController();
     var alert = UIAlertController(title: "Choose Image", message: nil, preferredStyle: .actionSheet)
     var viewController: UIViewController?
-    var pickImageCallback : ((UIImage) -> ())?;
+    var pickImageCallback : ((URL) -> ())?;
     
     override init(){
         super.init()
     }
     
-    func pickImage(_ viewController: UIViewController, _ callback: @escaping ((UIImage) -> ())) {
+    func pickImage(_ viewController: UIViewController, _ callback: @escaping ((URL) -> ())) {
         pickImageCallback = callback;
         self.viewController = viewController;
         
@@ -76,10 +76,17 @@ class ImagePickerManager: NSObject, UIImagePickerControllerDelegate, UINavigatio
       // For Swift 4.2
       func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
           picker.dismiss(animated: true, completion: nil)
-          guard let image = info[.originalImage] as? UIImage else {
+//          guard let image = info[.originalImage] as? UIImage else {
+//              fatalError("Expected a dictionary containing an image, but was provided the following: \(info)")
+//          }
+        
+          guard let imgUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL else {
               fatalError("Expected a dictionary containing an image, but was provided the following: \(info)")
           }
-          pickImageCallback?(image)
+        
+        
+        
+          pickImageCallback?(imgUrl)
       }
     
     

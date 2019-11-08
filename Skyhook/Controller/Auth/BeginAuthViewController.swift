@@ -173,10 +173,11 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
             if result { //success
                 self.appDelegate.enterApp(true)
                 
-            } else { //BEGIN DEV mode
+            } else {
+                //BEGIN DEV mode
                 self.count+=1
                 if self.count == 1 {
-                    self.loginUser(email: "admin@skyhook.com", password: "password")
+                    self.loginUser(email: "achall@toplev.io", password: "shw-%fIns")
                 }
                 //END DEV mode
                 self.errorLbl.text = "Login not recognized"

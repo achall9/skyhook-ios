@@ -56,16 +56,26 @@ class User: NSObject {
     func loadClaimant(claimant:NSDictionary){
         self.fullName = claimant.value(forKey: "name") as? String
         self.phone = claimant.value(forKey: "phone") as? String
+        self.email = claimant.value(forKey: "email") as? String
+
+        if let addrDic = claimant.value(forKey: "address") as? NSDictionary {
+                let address = Address()
+                address.loadAddress(info: addrDic)
+                self.address = address
+        }
     }
     
-    func loadInsured(insured:NSDictionary){
+    func loadInsured(insured:NSDictionary) {
          self.fullName = insured.value(forKey: "name") as? String
          self.phone = insured.value(forKey: "phone") as? String
+         self.email = insured.value(forKey: "email") as? String
+
+         if let addrDic = insured.value(forKey: "address") as? NSDictionary {
+                let address = Address()
+                address.loadAddress(info: addrDic)
+                self.address = address
+         }
      }
-    
-    func loadAddress(address:NSDictionary) {
-        
-    }
     
     
     func initialize() {
@@ -83,7 +93,6 @@ class User: NSObject {
     }
     
     func login (email:String, password:String, completion: @escaping (Bool) -> ()) {
-        
         
         let loginMutation = LoginUserMutation(email: email, password: password)
         let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)

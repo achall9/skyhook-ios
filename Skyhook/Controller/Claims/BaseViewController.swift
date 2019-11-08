@@ -26,9 +26,9 @@ class BaseViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-    func showError(){
+    func showError(message:String){
         
-        let alert = UIAlertController(title: "Error", message: "Failed to create new activity. Please try again later.", preferredStyle: UIAlertController.Style.alert)
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: UIAlertController.Style.alert)
         alert.addAction(UIAlertAction(title: "Okay",style: .default))
         self.present(alert, animated: true, completion: nil)
         

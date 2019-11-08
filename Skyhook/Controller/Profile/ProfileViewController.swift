@@ -37,10 +37,16 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func getClaims() {
         Claim.sharedInstance.fetchClaims() { claims in
-            print(claims)
-            self.claims = claims
+            
+            self.loadHeaderData(claims:claims)
+            self.claims.removeAll()
+            for claim in claims {
+                if claim.status == .closed  {
+                    self.claims.append(claim)
+                }
+            }
+           
             self.tableView.reloadData()
-            self.loadHeaderData()
                 
         }
     }
@@ -91,7 +97,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
     }
     
-    func loadHeaderData(){ // load ME query next time -- David should add this
+    func loadHeaderData(claims:[Claim]){ // load ME query next time -- David should add this
         if headerView == nil {
             return
         }
@@ -105,7 +111,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             if claim.status == ClaimStatus.closed {
                 closedCount+=1
             }
-            if claim.status == ClaimStatus.open {
+            if claim.status == .open || claim.status == .active {
                 openCount+=1
             }
             
@@ -120,11 +126,11 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @objc func profilePictureTap(_ sender: UITapGestureRecognizer? = nil) {
+        
         ImagePickerManager().pickImage(self){ image in
             //add image to profile
-            self.headerView.profileImage.image = image
-            
-            //save to server****
+//            self.headerView.profileImage.image = image
+                
         }
     }
     
@@ -137,21 +143,30 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.deselectRow(at: indexPath, animated: false)
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
-//                viewController.claim = claims[indexPath.row]
         viewController.claim = claims[indexPath.row]
-        viewController.claim?.status = ClaimStatus.closed
         self.navigationController?.pushViewController(viewController, animated: true)
     }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.claims.count
     }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 220
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ClaimCell") as! ClaimsTableViewCell
-        cell.statusView.backgroundColor = ColorUtils.getGreenColor()
+        
         cell.statusLabel.text = "CLOSED"
+        cell.statusView.backgroundColor = ColorUtils.getGreenColor()
+             
+        cell.claimNumberLabel.text = claims[indexPath.row].claimNumber
+        cell.claimantNameLabel.text = claims[indexPath.row].claimant?.fullName
+        cell.insuredNameLabel.text = claims[indexPath.row].insured?.fullName
+
+        cell.dateLabel.text = claims[indexPath.row].claimDate?.description
+
         return cell
     }
 

@@ -9,13 +9,16 @@
 import UIKit
 import MapKit
 import CoreLocation
+import MTSlideToOpen
 
-class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate, SlideButtonDelegate, ActivityItemDelegate {
+class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate, ActivityItemDelegate, MTSlideToOpenDelegate {
    
     @IBOutlet weak var claimNumberLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var closeClaimButton: SlidingButton!
-        
+    @IBOutlet weak var closeClaimView: MTSlideToOpenView!
+    
+    @IBOutlet weak var addActivityButton: UIButton!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,73 +28,31 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ActivityItemTableViewCell", bundle: nil), forCellReuseIdentifier: "ActivityItemTableViewCell")
-        
-        closeClaimButton.delegate = self
-        
-        if self.claim?.status == ClaimStatus.closed {
-            closeClaimButton.unlock()
-        }
-         
+    
         setHeader()
         
-    }
-    
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        tableView.reloadData()
-       
-    }
-    
-    //Slide Button Delegate
-    func buttonStatus(status: String, sender: SlidingButton) {
-        print(status)
+        handleClosedClaim()
         
     }
+
     
-    //started driving activity -- Delegate function, Activity Table View Cell
-    func didStartActivity() {
-        self.offerDirections()
-    }
-    
-    func offerDirections(){
-        let alert = UIAlertController(title: "Route to Destination", message: "Would you like to open up a map directions to the destination?", preferredStyle: .alert)
-               
-               alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: { [weak alert] (_) in
-                
-            
-                       // go to maps address for navigation if needed
-                       
-                       let geocoder = CLGeocoder()
-                if let locationString = self.claim?.customer?.address?.toString() {
-                    geocoder.geocodeAddressString(locationString) { (placemarks, error) in
-                    if let error = error {
-                        print(error.localizedDescription)
-                            } else {
-                                if let location = placemarks?.first?.location {
-                                    let coordinate = CLLocationCoordinate2DMake(location.coordinate.latitude,location.coordinate.longitude)
-                                    let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate, addressDictionary:nil))
-                                 mapItem.name = self.claim?.claimant?.business ?? "Claimant"
-                                    mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
-                                    
-                                }
-                            }
-                        }
-                }
-                       
-                    
-               }))
-               alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-               
-               self.present(alert, animated: true, completion: nil)
-    }
+    override func viewWillAppear(_ animated: Bool) {
+         super.viewWillAppear(animated)
+         tableView.reloadData()
+     }
     
     
-    //claim header info button click -- Delegate function, Claim Table View Cell
-    func didTapInfo() {
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimInfoViewController") as! ClaimInfoViewController
-        //        viewController.claim = claims[indexPath.row]
-        self.navigationController?.pushViewController(viewController, animated: true)
+    func handleClosedClaim() {
+        if self.claim?.status == .closed {
+            closeClaimView.isHidden = true
+            addActivityButton.alpha = 0.0
+        }
+        else {
+            closeClaimView.defaultLabelText = "CLOSE CLAIM"
+            closeClaimView.defaultSlidingColor = ColorUtils.getPurpleColor()
+            closeClaimView.defaultThumbnailColor = ColorUtils.getPurpleColor()
+            closeClaimView.delegate = self
+        }
     }
     
     
@@ -107,17 +68,81 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
     }
     
     
-    @IBAction func goBack(_ sender: Any) {
-      self.navigationController?.popViewController(animated: false)
+    //claim header info button click -- Delegate function, Claim Table View Cell
+       func didTapInfo() {
+           let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimInfoViewController") as! ClaimInfoViewController
+           viewController.claim = self.claim
+           self.navigationController?.pushViewController(viewController, animated: true)
+       }
+       
+       
+       @IBAction func goBack(_ sender: Any) {
+            self.appDelegate.enterApp(true)
+       }
+       
+       
+       @IBAction func addNewActivity(_ sender: Any) {
+           let viewController = self.storyboard?.instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
+           viewController.claim = self.claim
+           self.navigationController?.pushViewController(viewController, animated: true)
+       }
+    
+    
+    
+    // MARK: MTSlideToOpenDelegate
+    func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenView) {
+        self.claim?.closeClaim(claimId: (self.claim?.id!)!) { result in
+            //closed claim
+            if result {
+                  let alertController = UIAlertController(title: "Success!", message: "This claim has now been closed.", preferredStyle: .alert)
+                        let doneAction = UIAlertAction(title: "Okay", style: .default) { (action) in
+                            self.appDelegate.enterApp(true)
+                        }
+                        alertController.addAction(doneAction)
+                        self.present(alertController, animated: true, completion: nil)
+            } else {
+                // Failed...
+                self.showError(message:"Failed to close claim. Did you close out all your actvities?")
+            }
+        }
+        
+    }
+
+    
+    //started driving activity -- Delegate function, Activity Table View Cell
+    func didStartActivity() {
+        self.offerDirections()
     }
     
-    
-    @IBAction func addNewActivity(_ sender: Any) {
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
-        viewController.claim = self.claim
-        self.navigationController?.pushViewController(viewController, animated: true)
+    func offerDirections(){
+        let alert = UIAlertController(title: "Directions", message: "Would you like to open up a map directions to the destination?", preferredStyle: .alert)
+               
+               alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: { [weak alert] (_) in
+                
+            
+                       // go to maps address for navigation if needed
+                       
+                       let geocoder = CLGeocoder()
+                if let locationString = self.claim?.claimant?.address?.toString() {
+                    geocoder.geocodeAddressString(locationString) { (placemarks, error) in
+                    if let error = error {
+                        print(error.localizedDescription)
+                            } else {
+                                if let location = placemarks?.first?.location {
+                                    let coordinate = CLLocationCoordinate2DMake(location.coordinate.latitude,location.coordinate.longitude)
+                                    let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate, addressDictionary:nil))
+                                 mapItem.name = self.claim?.claimant?.fullName ?? "Claimant"
+                                    mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
+                                    
+                                }
+                            }
+                        }
+                }
+               }))
+               alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+               
+               self.present(alert, animated: true, completion: nil)
     }
-    
     
     
     /// *** TABLEVIEW DELEGATE/DATASOURCE MARK *** ///
@@ -136,56 +161,68 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return (claim?.activities.count)!
     }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ActivityItemTableViewCell") as! ActivityItemTableViewCell
      
         cell.delegate = self
+    
         cell.activity = claim?.activities[indexPath.row]
+
+        if appDelegate.isTracking && cell.activity?.id == appDelegate.activity?.id {
+            cell.activity = appDelegate.activity
+            cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+        }
+        
+        if cell.activity?.status == .started && !appDelegate.isTracking {
+            cell.activity?.continueTracking()
+            cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+        }
+        else if cell.activity?.status == .complete {
+            cell.playButton.alpha = 0.0
+        }
+        
         cell.nameLabel.text = claim?.activities[indexPath.row].name
+        
         if cell.activity?.flags != nil && cell.activity?.flags != "" {
             setFlagIcon(label: cell.nameLabel, name: (claim?.activities[indexPath.row].name)!)
         }
-        
-        if cell.activity?.id == appDelegate.activity?.id && appDelegate.isTracking {
-            cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-        }
-//        cell.timeLabel.text = String(claim?.activities[indexPath.row].totalElapsedMillis)
-        //        if indexPath.row == 0 {
-//            if appDelegate.activity != nil && (appDelegate.activity?.name?.contains("Driving"))! {
-//                cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-//                cell.activity = appDelegate.activity
-//                cell.nameLabel.text = appDelegate.activity!.name
-//
-//            } else {
-//                let a = Activity()
-//                a.name = "Driving to Destination"
-//                cell.activity = a
-//                cell.nameLabel.text = a.name
-//
-//            }
-//
-//
-//        }
-//        if indexPath.row == 1 {
-//            if appDelegate.activity != nil && (appDelegate.activity?.name?.contains("Met"))! {
-//                cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-//                cell.activity = appDelegate.activity
-//                cell.nameLabel.text = appDelegate.activity!.name
-//
-//            } else {
-//                let a = Activity()
-//                a.name = "Met with Claimant"
-//                cell.activity = a
-//                cell.nameLabel.text = a.name
-//            }
-//        }
-      
-//        cell.activity = claim?.activities[indexPath.row]
+           
+        cell.setTime(time:(cell.activity?.totalElapsedMillis)!)
+           
         
         return cell
+    }
+    
+    
+   func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        if claim?.activities[indexPath.row].status != .complete {
+            return true
+        } else {
+            return false
+        }
+    }
+
+  func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+
+        let editAction = UITableViewRowAction(style: .normal, title: "Finish") { (rowAction, indexPath) in
+            //TODO: edit the row at indexPath here
+            Activity().updateStop(activityId: (self.claim?.activities[indexPath.row].id)!) {
+                result in
+                //success
+                if let cell = tableView.cellForRow(at: indexPath) as? ActivityItemTableViewCell {
+                    cell.playButton.alpha = 0.0
+                }
+                
+            }
+        }
+        editAction.backgroundColor = ColorUtils.getRedColor()
+
+        return [editAction]
     }
     
     func setFlagIcon(label: UILabel, name: String){
@@ -225,7 +262,10 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         alert.addAction(UIAlertAction(title:"Cancel", style: .cancel))
         
         
-        
         self.present(alert, animated: true, completion: nil)
+    }
+    
+    func startError(){
+        showError(message:"This activity has already been finished. Please add a new activity to begin tracking.")
     }
 }

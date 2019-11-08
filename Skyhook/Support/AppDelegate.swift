@@ -22,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     var isTracking: Bool = false
     var activity: Activity?
     var currentLocation: CLLocation?
+    var pathArr : [Any] = []
     
     let gcmMessageIDKey = "gcm.message_id"
     
@@ -53,7 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         if emailDefaults != nil && emailDefaults != "" {
             User.sharedInstance.login(email: emailDefaults!, password: passwordDefaults ?? "") { result in
                 if result { //success
-                   self.enterApp(true)
+                    self.clearCache()
                 } else {
                  self.enterApp(false)
                 }
@@ -163,20 +164,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     //location tracking
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-       print("Location updated")
 
         if let location = locations.last {
 //            print("****** New location is \(location) *******")
             self.currentLocation = location
             
-            print(location.timestamp)
-            
-           
-            
             if self.isTracking {
-                
+                print("Location updated")
+                print(location.timestamp)
+
                 // register latest path
-                let pathArr = [self.currentLocation?.coordinate.latitude ?? 0.0, self.currentLocation?.coordinate.longitude ?? 0.0, location.timestamp.millisecondsSince1970] as [Any]
+                pathArr = [self.currentLocation?.coordinate.latitude ?? 0.0, self.currentLocation?.coordinate.longitude ?? 0.0, location.timestamp.millisecondsSince1970] as [Any]
                            
                 var path = UserDefaults.standard.string(forKey: "path")
                 if path == nil || path == "" {
@@ -186,7 +184,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 }
                            
                 UserDefaults.standard.set(path, forKey: "path")
-                
                 
                 //check for cases that could cheat the system
                 timeCheckin(location: location, path: path ?? "")
@@ -204,15 +201,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
           
             print(startTime)
             print(location.timestamp)
-            print("DIFFERENCE IN MINUTES: \(diffInMinutes)")
             //4 minutes passed, validate driving and stationary task
             if diffInMinutes! >= 4 {
-                print("TIMES UP --> Validate Activity")
+                print("TIMES UP --> Validate Activity now")
                 validateUserActivity(path:path)
             }
             
         } else {
-            
             UserDefaults.standard.set(location.timestamp, forKey: "time_check")
             UserDefaults.standard.set(location.coordinate.latitude, forKey: "lat_check")
             UserDefaults.standard.set(location.coordinate.longitude, forKey: "lng_check")
@@ -222,9 +217,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     
     func validateUserActivity(path:String) {
-        
-        print("CHECKING DISTANCE MOVED")
-        
+                
         if UserDefaults.standard.float(forKey: "lat_check") != nil {
             let startLat = UserDefaults.standard.object(forKey: "lat_check") as! CLLocationDegrees
             let startLng = UserDefaults.standard.object(forKey: "lng_check") as! CLLocationDegrees
@@ -232,53 +225,69 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             let start = CLLocation(latitude: startLat, longitude: startLng)
           
             let distanceInMeters = start.distance(from: self.currentLocation!)
-            
             print("DISTANCE TRAVELED: \(distanceInMeters)")
             
+            
             var flag = ""
-            switch activity?.name {
-           
-            case "Driving to Destination":
-                // under 100 feet (30 meters) and driving
-                print("DRIVE TASK CONFIRM")
-                if distanceInMeters < 30 {
+            print("DRIVE TASK CONFIRM")
+            if distanceInMeters < 30 {
+                // under 100 feet (30 meters) and driving task
+                if (activity?.name?.contains("Driv"))! {
                     flag = "NO MOVEMENT DRIVING"
                     self.sendLocalNotification(title:"Driving Activity Flagged",message: "Your location has not moved significantly in over 4 minutes time.")
                 }
-                break
-         
-            default:
-                if distanceInMeters >= 30 {
-                    // out of 100 foot radius on stationary task.. not good
-                    if !(activity?.name?.contains("Driving"))!{
-                        flag = "UNAPPROVED MOVEMENT"
-                        self.sendLocalNotification(title:"Stationary Activity Flagged",message: "Did you forget to turn off your tracking?")
-                    }
-                }
-                break
-                
             }
+            else if distanceInMeters >= 30 {
+                // out of 100 foot radius and not driving task.. not good
+                if !(activity?.name?.contains("Driv"))! {
+                    flag = "UNAPPROVED MOVEMENT"
+                    self.sendLocalNotification(title:"Stationary Activity Flagged",message: "Did you forget to turn off your tracking?")
+                }
+            }
+                
             
             self.activity!.updateGeo(activityId: activity?.id ?? "", path: path, flag: flag) { result in
-                //go to claim view and show new acitvities added
-              
+                
                 if result {
          
+                    //Repeat checkin process...
+                    UserDefaults.standard.set(self.pathArr.description, forKey: "path")
+                    UserDefaults.standard.set(nil, forKey: "time_check")
+                    UserDefaults.standard.set(0.0, forKey: "lat_check")
+                    UserDefaults.standard.set(0.0, forKey: "lng_check")
 
                 } else {
                     // Failed...
+                   // DO NOT RESET THE SAVED DATA.
                 }
             }
-         
-            //Repeat checkin process...
-            UserDefaults.standard.set("", forKey: "path")
-            UserDefaults.standard.set(nil, forKey: "time_check")
-            UserDefaults.standard.set(0.0, forKey: "lat_check")
-            UserDefaults.standard.set(0.0, forKey: "lng_check")
             
         }
     }
     
+    
+    func clearCache(){
+        UserDefaults.standard.synchronize()
+        if let id: String = UserDefaults.standard.value(forKey: "actId") as? String {
+            if id != "" {
+                print("ACTIVITY ID FOUND-- Pausing with flag")
+                Activity().pauseTracking(id: id, pause: true, flag: "FORCE CLOSED APP") {
+                    result in
+                    
+                    self.enterApp(true)
+                    
+                }
+            } else {
+                self.enterApp(true)
+            }
+            
+
+        } else {
+            self.enterApp(true)
+        }
+        
+    }
+
     
 
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
@@ -336,21 +345,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+  
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        print("BEGIN BACK")
+          if self.isTracking {
+              print(UserDefaults.standard.value(forKey: "actId"))
+
+          } else {
+              UserDefaults.standard.set("", forKey: "actId")
+
+          }
         
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        
         UIApplication.shared.applicationIconBadgeNumber = 0
 
     }
@@ -361,11 +379,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // Send push notification if tracking that it has stopped!
         if self.isTracking {
-            // save tracking time ended flag it,
-           sendLocalNotification(title:"Tracking Paused", message: "Please open Skyhook again to track your activity.")
-            
+                // save tracking time ended flag it,
+                self.sendLocalNotification(title:"Tracking Paused", message: "Please open Skyhook again to track your activity.")
+          
+
         }
+       
     }
+    
+   
 
     
     func sendLocalNotification(title:String, message:String){

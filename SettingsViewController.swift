@@ -32,16 +32,20 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //go to setting action
         tableView.deselectRow(at: indexPath, animated: false)
-        if indexPath.row == 3 {
+//        if indexPath.row == 3 {
             User.sharedInstance.logout()
             self.appDelegate.enterApp(false)
-        }
+//        } else {
+//            // go to edit view
+//                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "EditViewController") as! EditViewController
+//                self.navigationController?.pushViewController(viewController, animated: true)
+//        }
     
         
         
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return 1
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 50
@@ -53,22 +57,22 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         cell.layer.borderWidth = 0.5
         cell.layer.borderColor = UIColor.gray.cgColor
         
-        switch indexPath.row {
-        case 0:
-            cell.titleLabel.text = "Change email"
-            cell.icon.image = UIImage(named: "change_email")
-        case 1:
-            cell.titleLabel.text = "Edit password"
-            cell.icon.image = UIImage(named: "edit_pwd")
-            break
-        case 2:
-            cell.titleLabel.text = "Password recovery"
-            cell.icon.image = UIImage(named: "edit_pwd")
-        default:
+//        switch indexPath.row {
+//        case 0:
+//            cell.titleLabel.text = "Change email"
+//            cell.icon.image = UIImage(named: "change_email")
+//        case 1:
+//            cell.titleLabel.text = "Edit password"
+//            cell.icon.image = UIImage(named: "edit_pwd")
+//            break
+//        case 2:
+//            cell.titleLabel.text = "Password recovery"
+//            cell.icon.image = UIImage(named: "edit_pwd")
+//        default:
             cell.titleLabel.text = "Logout"
             cell.icon.image = UIImage(named: "logout")
-            break
-        }
+//            break
+//        }
         
         
         return cell

@@ -10,6 +10,7 @@ import UIKit
 
 protocol ActivityItemDelegate {
     func didStartActivity()
+    func startError()
 }
 
 class ActivityItemTableViewCell: UITableViewCell {
@@ -22,8 +23,8 @@ class ActivityItemTableViewCell: UITableViewCell {
     
     var delegate: ActivityItemDelegate?
 
-    
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -38,6 +39,7 @@ class ActivityItemTableViewCell: UITableViewCell {
         view.layer.borderColor = UIColor.lightGray.cgColor
         view.layer.borderWidth = 1.0
         
+        
     }
     
     @IBAction func clickPlay(_ sender: Any?) {
@@ -45,26 +47,68 @@ class ActivityItemTableViewCell: UITableViewCell {
         // Begin Play
         if !appDelegate.isTracking {
         
-            if let activity = self.activity{
+            if let activity = self.activity {
                 
-                playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-                activity.startTracking()
-                
-                //show alert to route to destination on driving activity
-                if let name = activity.name, name.contains("Driving") {
-                        delegate?.didStartActivity()
+                //already started in backend.. allow to stop
+                if activity.status == .started {
+                    activity.pauseTracking(id: activity.id!, pause: true, flag: "") { result in
+                        
+                        self.playButton.setImage(UIImage(named:"play_small"), for: .normal)
+
+                    }
+                    
+                } else if activity.status == .paused {
+                     activity.startTracking() { result in
+                                   
+                        if result {
+       
+                            self.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+                                 
+                            } else {
+                                //failed
+                                
+                        }
+                              
+                    }
+                    
                 }
+                    
+                else {
+                    activity.startTracking() { result in
+                               
+                        if !result {
+                            self.delegate?.startError()
+                                
+                        } else {
+                                          
+                            self.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
+                                
+                            //show alert to route to destination on driving activity
+                            if let name = activity.name, name.contains("Driv") {
+                                self.delegate?.didStartActivity()
+        
+                            }
+                                
+                        }
+                      
+                    }
+                }
+                
+           
               
             }
-       
 
         }
         // Stop Play
         else {
             
-            if appDelegate.activity?.id == self.activity?.id {
-                activity?.stopTracking()
-                playButton.setImage(UIImage(named:"play_small"), for: .normal)
+            if appDelegate.activity?.id == self.activity?.id
+            {
+                activity?.pauseTracking(id:activity!.id!, pause:true, flag:"") { result in
+                    
+                    self.playButton.setImage(UIImage(named:"play_small"), for: .normal)
+
+                }
             }
             
         }
@@ -72,15 +116,20 @@ class ActivityItemTableViewCell: UITableViewCell {
     }
     
     
+    func setTime(time:Int){
+        timeLabel.text = timeString(time: time) // set time to label
+    }
+    
     //called from timer
     @objc private func updateTime(){
         
-        let seconds = activity!.time
+        let seconds = activity!.totalElapsedMillis
         timeLabel.text = timeString(time: seconds) // set time to label
         
     }
     
-    func timeString(time:TimeInterval) -> String {
+    
+    func timeString(time:Int) -> String {
         let hours = Int(time) / 3600
         let minutes = Int(time) / 60 % 60
         let seconds = Int(time) % 60

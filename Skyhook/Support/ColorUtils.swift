@@ -32,6 +32,12 @@ class  ColorUtils {
 
     }
     
+    static func getPurpleColor() -> UIColor {
+        
+         return UIColor(red: 122/255, green: 129/255, blue: 255/255, alpha: 1.0)
+         
+     }
+    
     
     
 

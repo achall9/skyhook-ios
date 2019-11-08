@@ -28,7 +28,6 @@ class MainViewController: UIViewController {
         let profileVC = self.storyboard?.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
         
 //        self.prevBtn = self.appDelegate.selected_viewcon
-        
         self.viewCons = [claimsVC, notificationsVC, settingsVC, profileVC]
         self.tabClick(tabButtons[prevBtn])
     }

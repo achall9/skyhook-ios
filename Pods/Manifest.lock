@@ -95,6 +95,7 @@ PODS:
     - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (1.2.2)
   - leveldb-library (1.22)
+  - MTSlideToOpen (1.4.2)
   - nanopb (0.3.901):
     - nanopb/decode (= 0.3.901)
     - nanopb/encode (= 0.3.901)
@@ -109,6 +110,7 @@ DEPENDENCIES:
   - Firebase/Auth
   - Firebase/Database
   - Firebase/Messaging
+  - MTSlideToOpen
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -130,6 +132,7 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMSessionFetcher
     - leveldb-library
+    - MTSlideToOpen
     - nanopb
     - Protobuf
 
@@ -152,9 +155,10 @@ SPEC CHECKSUMS:
   GoogleUtilities: 9c2c544202301110b29f7974a82e77fdcf12bf51
   GTMSessionFetcher: 61bb0f61a4cb560030f1222021178008a5727a23
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
+  MTSlideToOpen: 16c26a4ecf72383751e01a4294746ea48b45231c
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   Protobuf: 67fb42ba613def994e61854de2b3164f13790cc4
 
-PODFILE CHECKSUM: 0fba7da12df341b913d12545334e318a6560636b
+PODFILE CHECKSUM: acc1e271e83ea9c4587191378e155faa8337cdbd
 
 COCOAPODS: 1.5.3

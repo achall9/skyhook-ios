@@ -22,6 +22,8 @@ class ClaimHeaderView: UIView {
    
     @IBOutlet weak var contactAddressButton: UIButton!
     
+    @IBOutlet weak var dueDateLabel: UILabel!
+    
     var claim: Claim?
     
     var delegate: ClaimHeaderDelegate?
@@ -33,9 +35,10 @@ class ClaimHeaderView: UIView {
         self.layer.borderColor = UIColor.lightGray.cgColor
         
         self.firmLabel.text = claim.customer?.business ?? ""
-        self.contactNameLabel.text = claim.customer?.fullName ?? ""
-        self.contactPhoneButton.setTitle(claim.customer?.phone, for: .normal)
-        self.contactAddressButton.setTitle(claim.customer?.address?.toString(), for: .normal)
+        self.contactNameLabel.text = claim.claimant?.fullName ?? ""
+        self.contactPhoneButton.setTitle(claim.claimant?.phone, for: .normal)
+        self.contactAddressButton.setTitle(claim.claimant?.address?.toString(), for: .normal)
+        self.dueDateLabel.text = "Due Date: \(claim.dueDate ?? "-")"
         
     }
     
@@ -72,7 +75,7 @@ class ClaimHeaderView: UIView {
                 if let location = placemarks?.first?.location {
                     let coordinate = CLLocationCoordinate2DMake(location.coordinate.latitude,location.coordinate.longitude)
                     let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate, addressDictionary:nil))
-                    mapItem.name = "Claim Destination"
+                    mapItem.name = "Claimant"
                     mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
                     
                 }

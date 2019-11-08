@@ -16,6 +16,10 @@ target 'Skyhook' do
 
   #GraphQL
   pod 'Apollo'
+  
+  #Close claim slider
+  pod 'MTSlideToOpen'
+
 
 
 

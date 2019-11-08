@@ -1,66 +1,85 @@
 
 
 query ClaimsList {
-    claims {
-      edges {
-         node {
-          id
-          claimNumber
-          claimDate
-          insured {
+   claims {
+   edges {
+      node {
+       id
+       claimNumber
+       claimDate
+       dueDate
+       insured {
+                  name
+                  phone
+                   email
+                  address {
+                       street1
+                       street2
+                       city
+                       state
+                       zip
+                   }
+       }
+       claimant {
+                  name
+                  phone
+                  email
+                  address {
+                       street1
+                       street2
+                       city
+                       state
+                       zip
+                   }
+          
+       }
+       customer {
+         id
+         customerName
+         customerContact
+         phone
+         address {
+             street1
+             street2
+             city
+             state
+             zip
+         }
+       }
+       status
+       activities {
            edges {
-               node {
-                     name
-                     phone
-               }
+           node {
+             id
+             name
+             totalElapsedMillis
+             geo
+             flags
+             notes
+             status
            }
-          }
-          claimant {
-           edges {
-               node {
-                     name
-                     phone
-               }
-           }
-          }
-          customer {
-            id
-            customerName
-            customerContact
-            phone
-            address {
-                street1
-                street2
-                city
-                state
-                zip
-            }
-          }
-          status
-          activities {
-              edges {
-              node {
-                id
-                name
-                totalElapsedMillis
-                geo
-                flags
-                notes
-              }
-            }
-          }
-        }
-      }
-    }
+         }
+       }
+     }
+   }
+ }
 }
 
 
+mutation UpdateClaimEnd($claimId:ID!) {
+  updateClaimEnd(input: { claimId: $claimId }) {
+     success
+     message
+  }
+}
 
-mutation CreateActivity($claimId:ID!, $name:String, $status:ActivityStatusInput ) {
+
+mutation CreateActivity($claimId:ID!, $name:String!, $status:ActivityStatus,$type:ActivityType) {
   createActivity(input: {
     claimId: $claimId,
     name: $name,
-    status: $status
+    status: $status,
+    type: $type
   }) {
     activity {
       id
@@ -78,25 +97,30 @@ mutation CreateActivity($claimId:ID!, $name:String, $status:ActivityStatusInput 
 
 mutation UpdateActivityStart($activityId:ID!) {
   updateActivityStart(input: { activityId: $activityId }) {
-    activity {
-      id
-    }
+    success
+    message
+  }
+}
+
+mutation UpdateActivityPause($activityId:ID!, $pause:Boolean!) {
+  updateActivityPause(input: { activityId: $activityId, pause: $pause }) {
+    success
+    message
   }
 }
 
 mutation UpdateActivityEnd($activityId:ID!) {
   updateActivityEnd(input: { activityId: $activityId }) {
-    activity {
-      id
-    }
+     success
+     message
   }
 }
 
+
 mutation UpdateActivityGeoInput($activityId:ID!, $path:String!, $flag:String!) {
   updateActivityGeo(input: { activityId: $activityId, path: $path, flag: $flag }) {
-    activity {
-      id
-    }
+    success
+    message
   }
 }
 
@@ -105,9 +129,8 @@ mutation UpdateNotes($activityId: ID!, $note: String!) {
     activityId: $activityId,
     note: $note
   }) {
-    activity {
-      id
-    }
+    success
+    message
   }
 }
 
