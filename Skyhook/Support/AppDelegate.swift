@@ -271,7 +271,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         if let id: String = UserDefaults.standard.value(forKey: "actId") as? String {
             if id != "" {
                 print("ACTIVITY ID FOUND-- Pausing with flag")
-                Activity().pauseTracking(id: id, pause: true, flag: "FORCE CLOSED APP") {
+                Activity().stopTracking(id: id, flag: "FORCE CLOSED APP") {
                     result in
                     
                     self.enterApp(true)
@@ -337,7 +337,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         print("APNs token retrieved: \(deviceToken)")
         
         //Messaging.messaging().apnsToken = deviceToken
-        
     }
 
     
@@ -476,6 +475,8 @@ extension AppDelegate : MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
         print("Firebase registration token: \(fcmToken)")
         
+        UserDefaults.standard.set(fcmToken, forKey: "fcmToken")
+
     }
     // [END refresh_token]
     // [START ios_10_data_message]

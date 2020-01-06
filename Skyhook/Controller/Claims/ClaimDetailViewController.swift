@@ -11,13 +11,14 @@ import MapKit
 import CoreLocation
 import MTSlideToOpen
 
-class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate, ActivityItemDelegate, MTSlideToOpenDelegate {
+class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, ClaimHeaderDelegate, ActivityItemDelegate, MTSlideToOpenDelegate, CreateActivityDelegate {
    
     @IBOutlet weak var claimNumberLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var closeClaimView: MTSlideToOpenView!
-    
     @IBOutlet weak var addActivityButton: UIButton!
+
+    var placeHolderView: NoActivityPlaceHolderView!
     
     
     override func viewDidLoad() {
@@ -33,7 +34,22 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         
         handleClosedClaim()
         
+        
     }
+    
+    //go to add new activity
+    func didCreateActivity() {
+        if claim?.status == .closed {
+            self.navigationController?.popViewController(animated: false)
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
+            viewController.claim = self.claim
+                   
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
+       
+    }
+    
 
     
     override func viewWillAppear(_ animated: Bool) {
@@ -46,6 +62,10 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         if self.claim?.status == .closed {
             closeClaimView.isHidden = true
             addActivityButton.alpha = 0.0
+            if let pView = placeHolderView {
+                pView.label.text = "This claim has been closed."
+                pView.button.setTitle("Go Back", for: .normal)
+            }
         }
         else {
             closeClaimView.defaultLabelText = "CLOSE CLAIM"
@@ -64,6 +84,17 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
 
         //set headerview to tableview
         tableView.tableHeaderView = view
+                       
+        if self.claim?.activities.count == 0 {
+            placeHolderView = .fromNib()
+            placeHolderView.delegate = self
+                         
+            // Set placeholder view if no activities started yet
+            placeHolderView.frame = CGRect(x: 15 , y: view.frame.height + 175, width: self.view.frame.width-30, height: placeHolderView.frame.height)
+                             
+            self.view.addSubview(placeHolderView)
+        }
+             
     
     }
     
@@ -82,9 +113,7 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
        
        
        @IBAction func addNewActivity(_ sender: Any) {
-           let viewController = self.storyboard?.instantiateViewController(withIdentifier: "NewActivityViewController") as! NewActivityViewController
-           viewController.claim = self.claim
-           self.navigationController?.pushViewController(viewController, animated: true)
+            didCreateActivity()
        }
     
     
@@ -102,7 +131,7 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
                         self.present(alertController, animated: true, completion: nil)
             } else {
                 // Failed...
-                self.showError(message:"Failed to close claim. Did you close out all your actvities?")
+                self.showError(message:"Failed to close claim. Did you close out all of your actvities?")
             }
         }
         
@@ -113,6 +142,7 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
     func didStartActivity() {
         self.offerDirections()
     }
+
     
     func offerDirections(){
         let alert = UIAlertController(title: "Directions", message: "Would you like to open up a map directions to the destination?", preferredStyle: .alert)
@@ -176,14 +206,8 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         if appDelegate.isTracking && cell.activity?.id == appDelegate.activity?.id {
             cell.activity = appDelegate.activity
             cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-        }
-        
-        if cell.activity?.status == .started && !appDelegate.isTracking {
-            cell.activity?.continueTracking()
-            cell.playButton.setImage(UIImage(named:"stop_small"), for: .normal)
-        }
-        else if cell.activity?.status == .complete {
-            cell.playButton.alpha = 0.0
+        } else {
+            cell.playButton.setImage(UIImage(named:"play_small"), for: .normal)
         }
         
         cell.nameLabel.text = claim?.activities[indexPath.row].name
@@ -193,38 +217,37 @@ class ClaimDetailViewController: BaseViewController, UITableViewDelegate, UITabl
         }
            
         cell.setTime(time:(cell.activity?.totalElapsedMillis)!)
-           
         
         return cell
     }
     
     
-   func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        if claim?.activities[indexPath.row].status != .complete {
-            return true
-        } else {
-            return false
-        }
-    }
-
-  func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-
-        let editAction = UITableViewRowAction(style: .normal, title: "Finish") { (rowAction, indexPath) in
-            //TODO: edit the row at indexPath here
-            Activity().updateStop(activityId: (self.claim?.activities[indexPath.row].id)!) {
-                result in
-                //success
-                if let cell = tableView.cellForRow(at: indexPath) as? ActivityItemTableViewCell {
-                    cell.playButton.alpha = 0.0
-                }
-                
-            }
-        }
-        editAction.backgroundColor = ColorUtils.getRedColor()
-
-        return [editAction]
-    }
-    
+//   func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+//        if claim?.activities[indexPath.row].status != .complete {
+//            return true
+//        } else {
+//            return false
+//        }
+//    }
+//
+//  func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+//
+//        let editAction = UITableViewRowAction(style: .normal, title: "Finish") { (rowAction, indexPath) in
+//            //TODO: edit the row at indexPath here
+//            self.claim?.activities[indexPath.row].stopTracking(id: (self.claim?.activities[indexPath.row].id)!,flag: "") {
+//                result in
+//                //success
+//                if let cell = tableView.cellForRow(at: indexPath) as? ActivityItemTableViewCell {
+//                    cell.playButton.alpha = 0.0
+//                }
+//
+//            }
+//        }
+//        editAction.backgroundColor = ColorUtils.getRedColor()
+//
+//        return [editAction]
+//    }
+//
     func setFlagIcon(label: UILabel, name: String){
         //Create Attachment
         let imageAttachment =  NSTextAttachment()

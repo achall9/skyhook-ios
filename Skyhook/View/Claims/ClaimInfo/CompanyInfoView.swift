@@ -33,6 +33,18 @@ class CompanyInfoView: UIView {
             gbicPhoneLabel.text = phone
         }
         
+        
+        //   Set IA Data
+        if let ia = info.firm?.business {
+            iaLabel.text = ia
+        }
+        if let name = info.firm?.fullName {
+            iaContactLabel.text = name
+        }
+        if let phone = info.firm?.phone {
+            iaPhoneLabel.text = phone
+        }
+        
     }
     
     

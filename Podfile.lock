@@ -2,6 +2,9 @@ PODS:
   - Apollo (0.15.3):
     - Apollo/Core (= 0.15.3)
   - Apollo/Core (0.15.3)
+  - Crashlytics (3.14.0):
+    - Fabric (~> 1.10.2)
+  - Fabric (1.10.2)
   - Firebase (6.8.1):
     - Firebase/Core (= 6.8.1)
   - Firebase/Analytics (6.8.1):
@@ -102,19 +105,27 @@ PODS:
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
   - Protobuf (3.9.2)
+  - SDWebImage (5.2.3):
+    - SDWebImage/Core (= 5.2.3)
+  - SDWebImage/Core (5.2.3)
 
 DEPENDENCIES:
   - Apollo
+  - Crashlytics (~> 3.14.0)
+  - Fabric (~> 1.10.2)
   - Firebase
   - Firebase/Analytics
   - Firebase/Auth
   - Firebase/Database
   - Firebase/Messaging
   - MTSlideToOpen
+  - SDWebImage
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Apollo
+    - Crashlytics
+    - Fabric
     - Firebase
     - FirebaseAnalytics
     - FirebaseAnalyticsInterop
@@ -135,9 +146,12 @@ SPEC REPOS:
     - MTSlideToOpen
     - nanopb
     - Protobuf
+    - SDWebImage
 
 SPEC CHECKSUMS:
   Apollo: bec38cb63711f7c3f3c7c2faae3be9139d2a8a57
+  Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
+  Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74
   Firebase: 9cbe4e5b5eaafa05dc932be58b7c8c3820d71e88
   FirebaseAnalytics: 843c7f64a8f9c79f0d03281197ebe7bb1d58d477
   FirebaseAnalyticsInterop: d48b6ab67bcf016a05e55b71fc39c61c0cb6b7f3
@@ -158,7 +172,8 @@ SPEC CHECKSUMS:
   MTSlideToOpen: 16c26a4ecf72383751e01a4294746ea48b45231c
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   Protobuf: 67fb42ba613def994e61854de2b3164f13790cc4
+  SDWebImage: 46a7f73228f84ce80990c786e4372cf4db5875ce
 
-PODFILE CHECKSUM: acc1e271e83ea9c4587191378e155faa8337cdbd
+PODFILE CHECKSUM: 3b13357aa84d3049386ebf7f72b59a02ce063bb8
 
 COCOAPODS: 1.5.3

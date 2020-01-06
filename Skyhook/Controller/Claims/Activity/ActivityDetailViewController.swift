@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     
@@ -20,7 +21,7 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     
     @IBOutlet weak var collectionView: UICollectionView!
         
-    var images:[UIImage] = []
+    var images:[UIImageView] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,11 +44,7 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
         self.textView.delegate = self // for placeholder mimic
         textView.text = "Enter notes here"
         textView.textColor = UIColor.lightGray
-        if claim?.activities[selectedIndex!].status == .complete {
-            textView.isEditable = false
-            
-        }
-        
+                
         
         if self.claim?.activities[selectedIndex!].notes == "" {
             self.addedNotesTextView.alpha = 0.0
@@ -55,9 +52,18 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
             self.addedNotesTextView.text = self.claim?.activities[selectedIndex!].notes
         }
         
-        if self.images.count > 0 {
+            
+        //set the images..
+        if (self.claim?.activities[selectedIndex!].uploads.count)! > 0 {
+            for urlStr in (self.claim?.activities[selectedIndex!].uploads)! {
+                let imageView = UIImageView()
+                let url:URL = URL.init(string: urlStr)!
+                imageView.sd_setImage(with: url, placeholderImage: nil)
+                images.append(imageView)
+            }
+          
             self.attachPhotoLabel.alpha = 0.0
-            //set the images..
+            self.collectionView.reloadData()
         }
         
         
@@ -77,27 +83,8 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
              self.timeLabel.text = timeString(time:(self.claim?.activities[selectedIndex!].totalElapsedMillis)!)
         }
              
-        if claim?.activities[selectedIndex!].status == .complete {
-            playButton.alpha = 0.0
-        }
     }
-    
-    
-    @IBAction func finishActivity(_ sender: Any) {
-//        Activity().updateStop(activityId:(self.claim?.activities[selectedIndex!].id)!) { result in
-//            //success
-//            self.navigationController?.popViewController(animated: false)
-//        }
-    }
-    
-//    func textViewShouldReturn(_ textField: UITextField) -> Bool {
-//          print("SEND CLICK")
-//          updateNotes()
-//          return true
-//      }
 
-
-    
     
     // DELEGATE METHODS FOR PLACEHOLDER MIMIC
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -116,32 +103,48 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     
     
     @IBAction func goBack(_ sender: Any) {
+      
         if textView.text! != "" && textView.text! != "Enter notes here" && claim!.activities[selectedIndex!].notes != textView.text {
             //text updated -- update server
             updateNotes()
-            self.navigationController?.popViewController(animated: false)
+            goToClaimDetail()
 
        } else {
-            self.navigationController?.popViewController(animated: false)
+            goToClaimDetail()
         }
     }
     
-    func updateNotes(){
+    func goToClaimDetail () {
+        if claim!.activities[selectedIndex!].status == .complete {
+            self.claim?.activities.remove(at: selectedIndex!)
+        }
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
+        viewController.claim = self.claim
+        self.navigationController?.pushViewController(viewController, animated: true)
         
-        Activity().updateNotes(activityId: claim!.activities[selectedIndex!].id!, notes: textView.text!) { result in
-                //update activity locally and exit view
-                if result {
-                    let newNotes = "\(self.claim!.activities[self.selectedIndex!].notes)\n\(self.textView.text!)"
-                    self.claim!.activities[self.selectedIndex!].notes = newNotes
-                    
-                    self.textView.text = ""
-                    self.addedNotesTextView.text = self.claim!.activities[self.selectedIndex!].notes
+    }
+    
+    func updateNotes(){
+        do {
+            Activity().updateNotes(activityId: claim!.activities[selectedIndex!].id!, notes: textView.text!) { result in
+                      //update activity locally and exit view
+                      if result {
+                          let newNotes = "\(self.claim!.activities[self.selectedIndex!].notes)\n\(self.textView.text!)"
+                          self.claim!.activities[self.selectedIndex!].notes = newNotes
+                          
+                          self.textView.text = ""
+                          self.addedNotesTextView.alpha = 1.0
+                          self.addedNotesTextView.text = self.claim!.activities[self.selectedIndex!].notes
 
-                } else {
-                    // Failed...
-                    self.showError(message:"Failed to update notes.")
-                }
-            }
+                      } else {
+                          // Failed...
+                          self.showError(message:"Failed to update notes.")
+                      }
+                  }
+        } catch {
+            //error claim removed..
+        }
+  
         
     }
     
@@ -165,7 +168,9 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
                 updateNotes()
             }
             if self.claim!.activities[self.selectedIndex!].id == appDelegate.activity?.id {
-                self.appDelegate.activity?.pauseTracking(id:self.appDelegate.activity!.id!, pause:true, flag:"") { result in
+                self.appDelegate.activity?.stopTracking(id:self.appDelegate.activity!.id!, flag:"") { result in
+                    
+                    self.claim?.activities.remove(at: self.selectedIndex!)
                     
                     self.playButton.setImage(UIImage(named:"play_large"), for: .normal)
 
@@ -182,10 +187,12 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     //called from timer
     @objc private func updateTime(){
         
-        if appDelegate.isTracking && appDelegate.activity?.id == claim!.activities[selectedIndex!].id {
-        
-            let seconds = appDelegate.activity?.totalElapsedMillis
-            timeLabel.text = timeString(time: seconds!)
+        if selectedIndex! < (claim?.activities.count)! {
+            if appDelegate.isTracking && appDelegate.activity?.id == claim!.activities[selectedIndex!].id {
+                         
+                let seconds = appDelegate.activity?.totalElapsedMillis
+                timeLabel.text = timeString(time: seconds!)
+            }
         }
         
     }
@@ -201,48 +208,36 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     
     @IBAction func attachPhoto(_ sender: Any) {
         ImagePickerManager().pickImage(self){ imageURL in
-            //add image to activity
-            
-            if let image = UIImage(contentsOfFile: imageURL.path) {
-                self.attachPhotoLabel.alpha = 0.0
-                self.images.append(image)
-                self.collectionView.reloadData()
-            }
-
-            
-            // Create the file to upload
-//            guard
-//              let fileURL = Bundle.main.url(forResource: "a",
-//                                            withExtension: "txt"),
-//              let file = GraphQLFile(fieldName: "file",
-//                                     originalName: "a.txt",
-//                                     mimeType: "text/plain", // <-defaults to "application/octet-stream"
-//                                     fileURL: fileURL) else {
-//                // Either the file URL couldn't be created or the file couldn't be created.
-//                return
-//            }
-            
-            self.uploadImage(path: imageURL.absoluteString)
-            
+            self.uploadImage(path: imageURL.path)
         }
     }
     
-    func uploadImage(path:String) {
-        self.claim!.activities[self.selectedIndex!].uploadFile(activityId: self.claim!.activities[self.selectedIndex!].id!, file: path) { result in
-            
-            if result {
-//                self.images.append(image)
-                self.collectionView.reloadData()
+      func uploadImage(path:String) {
+            self.claim!.activities[self.selectedIndex!].uploadFile(activityId: self.claim!.activities[self.selectedIndex!].id!, file: path) { result in
+                
+                if result {
+                    
+                    print("***Image upload success *** ")
+                    
+                    
+                    //add image to activity
+                    if let image = UIImage(contentsOfFile: path) {
+                        self.attachPhotoLabel.alpha = 0.0
+                        let imageView = UIImageView()
+                        imageView.image = image
+                        self.images.append(imageView)
+                        self.collectionView.reloadData()
+                    }
+                    
 
-            } else {
-                self.showError(message: "Image upload failed. Please try again later.")
+                } else {
+                    
+                    self.showError(message: "Image upload failed. Please try again later.")
+                }
             }
+            
         }
-        
-        
-        
-    }
-    
+
 
 }
 
@@ -258,13 +253,14 @@ extension ActivityDetailViewController: UICollectionViewDelegateFlowLayout, UICo
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 //        return self.activity.images.count
-        return self.images.count
+        return images.count
     }
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ImageCollectionViewCell", for: indexPath) as! ImageCollectionViewCell
-        cell.imageView.image = images[indexPath.row]
+        images[indexPath.row].frame = CGRect(x: 0, y: 0, width: cell.frame.width, height: cell.frame.height)
+        cell.contentView.addSubview(images[indexPath.row])
         return cell
     }
 

@@ -25,9 +25,14 @@ class User: NSObject {
     var roleId: String?
     var jwt: String?
     
-    var business:String?
+    var business: String?
     var phone: String?
     var address: Address?
+    
+    var legalBusiness: String?
+    var legalContact: String?
+    var legalPhone: String?
+    var legalAddress: Address?
     
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
@@ -42,9 +47,9 @@ class User: NSObject {
     
     func loadCustomer(customer:NSDictionary) {
         self.id = customer.value(forKey: "id") as? String
-        self.business = customer.value(forKey: "customerName") as? String
+        self.business = customer.value(forKey: "name") as? String
         self.phone = customer.value(forKey: "phone") as? String
-        self.fullName = customer.value(forKey: "customerContact") as? String
+        self.fullName = customer.value(forKey: "contact") as? String
         
         if let addrDic = customer.value(forKey: "address") as? NSDictionary {
             let address = Address()
@@ -52,6 +57,19 @@ class User: NSObject {
             self.address = address
         }
     }
+    
+    func loadFirm(firm:NSDictionary) {
+           self.id = firm.value(forKey: "id") as? String
+           self.business = firm.value(forKey: "name") as? String
+           self.phone = firm.value(forKey: "phone") as? String
+           self.fullName = firm.value(forKey: "contact") as? String
+           if let addrDic = firm.value(forKey: "address") as? NSDictionary {
+               let address = Address()
+               address.loadAddress(info: addrDic)
+               self.address = address
+           }
+       }
+       
     
     func loadClaimant(claimant:NSDictionary){
         self.fullName = claimant.value(forKey: "name") as? String
@@ -62,6 +80,17 @@ class User: NSObject {
                 let address = Address()
                 address.loadAddress(info: addrDic)
                 self.address = address
+        }
+        
+        if let legalDic = claimant.value(forKey: "legal") as? NSDictionary {
+            self.legalBusiness = legalDic.value(forKey: "name") as? String
+            self.legalContact = legalDic.value(forKey: "contact") as? String
+            self.legalPhone = legalDic.value(forKey: "phone") as? String
+            if let addrDic = claimant.value(forKey: "address") as? NSDictionary {
+                        let address = Address()
+                        address.loadAddress(info: addrDic)
+                        self.legalAddress = address
+                }
         }
     }
     
@@ -93,8 +122,10 @@ class User: NSObject {
     }
     
     func login (email:String, password:String, completion: @escaping (Bool) -> ()) {
+        //firebase push notification token
+        let token : String = UserDefaults.standard.string(forKey: "fcmToken") ?? ""
         
-        let loginMutation = LoginUserMutation(email: email, password: password)
+        let loginMutation = LoginUserMutation(email: email, password: password, registrationToken: token)
         let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)
         
         apollo.perform(mutation: loginMutation) { (result) in
@@ -103,25 +134,34 @@ class User: NSObject {
             let resultDic = resultMap as NSDictionary?
             let loginDic = resultDic?.value(forKey: "login") as? NSDictionary
             
+            print(loginDic)
+
             if loginDic == nil { // failed
                 completion(false)
                 
             } else { // SUCCESS
-                
+        
                 let userDic = loginDic?.value(forKey: "user") as? NSDictionary
                 
-                let fullName = userDic?.value(forKey: "fullName") as? String ?? ""
-                let email = userDic?.value(forKey: "email") as? String ?? ""
-                let id = userDic?.value(forKey: "id") as? String ?? ""
-                let role = userDic?.value(forKey: "roleId") as? String ?? ""
-                let jwt = userDic?.value(forKey: "jwt") as? String ?? ""
-                self.loadUser(id, fullName, email, role, jwt)
-                
-                UserDefaults.standard.setValue(email, forKey: "email")
-                UserDefaults.standard.setValue(password, forKey: "password")
-                
-                completion(true)
-                
+                if (userDic?.value(forKey: "roleId") as? UserRole) == UserRole.fieldAdjuster {
+                                   
+                    let fullName = userDic?.value(forKey: "fullName") as? String ?? ""
+                    let email = userDic?.value(forKey: "email") as? String ?? ""
+                    let id = userDic?.value(forKey: "id") as? String ?? ""
+                    let role = userDic?.value(forKey: "roleId") as? String ?? ""
+                    let jwt = userDic?.value(forKey: "jwt") as? String ?? ""
+                    self.loadUser(id, fullName, email, role, jwt)
+                                   
+                    UserDefaults.standard.setValue(email, forKey: "email")
+                    UserDefaults.standard.setValue(password, forKey: "password")
+                                   
+                    completion(true)
+                    
+                } else {
+  
+                    completion(false)
+                }
+               
             }
         }
     }
@@ -132,8 +172,46 @@ class User: NSObject {
         UserDefaults.standard.setValue("", forKey: "password")
     }
     
-    func register (email:String,password:String){
-        
+    
+    //password reset email
+    func resetPassword (email:String, completion: @escaping (Bool) -> ()) {
+          
+//          let mutation = CreatePasswordResetRequestMutation(email: email)
+//          let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)
+//          
+//          apollo.perform(mutation: mutation) { (result) in
+//              
+//            let resultMap = try! result.get().data?.resultMap
+//            let resultDic = resultMap as NSDictionary?
+//        
+//            completion(true)
+//              
+//          }
+      }
+    
+    
+    func saveImage(image: UIImage) -> Bool {
+        guard let data = image.jpegData(compressionQuality: 1) ?? image.pngData() else {
+            return false
+        }
+        guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
+            return false
+        }
+        do {
+            try data.write(to: directory.appendingPathComponent("skyhook-profile.png")!)
+            return true
+        } catch {
+            print(error.localizedDescription)
+            
+            return false
+        }
+    }
+    
+    func getSavedImage() -> UIImage? {
+        if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+            return UIImage(contentsOfFile: URL(fileURLWithPath: dir.absoluteString).appendingPathComponent("skyhook-profile.png").path)
+        }
+        return nil
     }
     
 }

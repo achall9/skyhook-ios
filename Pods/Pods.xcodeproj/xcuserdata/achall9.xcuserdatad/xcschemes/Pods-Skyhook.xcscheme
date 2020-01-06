@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E8F56118601B53031937F4371A50C133"
+               BlueprintIdentifier = "E17D4FAE439CAA44DE2B3C4C79C4A7E3"
                BuildableName = "Pods_Skyhook.framework"
                BlueprintName = "Pods-Skyhook"
                ReferencedContainer = "container:Pods.xcodeproj">

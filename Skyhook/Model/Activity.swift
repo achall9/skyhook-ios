@@ -12,17 +12,19 @@ import Apollo
 
 class Activity: NSObject {
     // MARK: - Variables And Properties
+    
+    let  IMAGE_VIEW_URL = "http://skyhook-accountability.s3.us-east-2.amazonaws.com/"
 
     var id:String?
     var name:String?
     var totalElapsedMillis:Int = 0
     var flags:String = ""
     var notes:String = ""
-    var file:String = ""
+    var uploads:[String] = []
     var status:ActivityStatus?
         
     /// TEMP VARIABLES
-    var beginLat = 0.0
+    var beginLat = 0.02
     var beginLong = 0.0
     
     var timer: Timer?
@@ -34,8 +36,19 @@ class Activity: NSObject {
         self.name = info.value(forKey: "name") as? String
         self.totalElapsedMillis = (info.value(forKey: "totalElapsedMillis") as? Int ?? 0)/1000 //convert to seconds
         self.flags = info.value(forKey: "flags") as? String ?? ""
-        self.notes = info.value(forKey: "notes") as? String ?? ""
+        if let notesArr = info.value(forKey: "notes") as? [NSDictionary]{
+            for note in notesArr {
+                self.notes += "\(note.value(forKey: "note") as? String ?? "")\n"
+            }
+        }
         self.status = info.value(forKey: "status") as? ActivityStatus
+        let uploadIdArr = info.value(forKey: "uploads") as? [NSDictionary]
+        if uploadIdArr != nil {
+            for upload in uploadIdArr! {
+                self.uploads.append((upload["url"] as? String)!)
+            }
+        }
+      
         
     }
     
@@ -114,108 +127,60 @@ class Activity: NSObject {
         UserDefaults.standard.set(0.0, forKey: "lng_check")
         UserDefaults.standard.set(self.id, forKey: "actId")
         UserDefaults.standard.synchronize()
-        
-        if self.status == .paused {
-            // START AFTER PAUSE
-            self.updatePause(activityId: self.id ?? "", pause: false) { result in
-                         
-                             if result {
-                              print("STARTED AGAIN")
 
-                              // SUCCESS - started tracking
-                              self.appDelegate.activity = self
-                              self.appDelegate.isTracking = true
-                               
-                              self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
-                              
-                               completion(true)
-                              
-                             } else {
-                                  // Failed...
-                                  completion(false)
-                             }
-                         }
-            
-        }
         /// NEW START
-        else if self.status == .pending {
-            
-            self.updateStart(activityId: self.id ?? "") { result in
-                 
-                     if result {
-                      print("STARTED")
-
-                      // SUCCESS - started tracking
-                      self.appDelegate.activity = self
-                      self.appDelegate.isTracking = true
-                       
-                      self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
-                      
-                      completion(true)
-                      
-                     } else {
-                          // Failed...
-                          completion(false)
-                     }
-                 }
-        } else {
-            completion(false)
+        self.grapqlStart(activityId: self.id ?? "") { result in
+                     
+            if result {
+                print("STARTED")
+                        
+                // SUCCESS - started tracking
+                self.appDelegate.activity = self
+                self.appDelegate.isTracking = true
+                           
+                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
+                          
+                completion(true)
+                
+            }
+            else {
+                // Failed...
+                completion(false)
+                  
+            }
         }
-        
      
-     
-    }
-    
-    func continueTracking(){
-        //Repeat checkin process...
-        UserDefaults.standard.set("", forKey: "path")
-        UserDefaults.standard.set(nil, forKey: "time_check")
-        UserDefaults.standard.set(0.0, forKey: "lat_check")
-        UserDefaults.standard.set(0.0, forKey: "lng_check")
-        
-        self.appDelegate.activity = self
-                    
-        self.appDelegate.isTracking = true
-                         
-        self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.UpdateTimer), userInfo: nil, repeats: true)
     }
     
     
     //stop time tracking
-    func pauseTracking(id: String, pause:Bool, flag: String, completion: @escaping (Bool) -> ()) {
+    func stopTracking(id: String, flag: String, completion: @escaping (Bool) -> ()) {
         
         let path = UserDefaults.standard.string(forKey: "path")
+        print(path)
+        
         
         self.updateGeo(activityId: id, path: path ?? "", flag: flag) { result in
                                    
             if result {
                 //updated geo now can stop activity
-                             
-                print("PAUSING")
-                self.updatePause(activityId: id, pause: pause) { result in
+                print("STOPPING")
+                self.grapqlStop(activityId: id) { result in
                                                                                         
                     if result {
-                                                                   
-                        //end background mode
-                        print("DATA SUBMITTED")
-                                                  
-                        self.status = .paused
+                        self.status = .complete
                                                 
-                        // SUCCESS - paused tracking
-                                                
-                        print("PAUSED")
-                    
-                        //cache management
-                        UserDefaults.standard.set("", forKey: "actId")
-                                                
+                        // SUCCESS - stopped tracking
                         self.appDelegate.activity = nil
-                                                    
                         self.appDelegate.isTracking = false
                               
                         if let timer = self.timer {
                             timer.invalidate()
                         }
-                                                                    
+                                           
+                        //cache management
+                        UserDefaults.standard.set("", forKey: "actId")
+                        
                         //Repeat checkin process...
                         UserDefaults.standard.set("", forKey: "path")
                         UserDefaults.standard.set(nil, forKey: "time_check")
@@ -248,7 +213,7 @@ class Activity: NSObject {
     
     
     
-    func updateStart(activityId: String, completion: @escaping (Bool) -> ()){
+    func grapqlStart(activityId: String, completion: @escaping (Bool) -> ()){
         
         let updateMutation = UpdateActivityStartMutation(activityId: activityId)
         let apollo: ApolloClient = {
@@ -293,45 +258,10 @@ class Activity: NSObject {
         }
         
     }
-    
-    
-    func updatePause(activityId: String, pause: Bool, completion: @escaping (Bool) -> ()){
-        
-        let updateMutation = UpdateActivityPauseMutation(activityId: activityId, pause: pause)
-        let apollo: ApolloClient = {
-                                            
-            let token = User.sharedInstance.jwt
-                                       
-            let configuration = URLSessionConfiguration.default
 
-            // Add additional headers as needed
-            configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
-                                      
-            let url = URL(string: GraphQL.ENDPOINT)!
-            let session = URLSession(configuration: configuration)
-                                        
-            return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
-                                 
-        }()
-
-                              
-        apollo.perform(mutation: updateMutation) { (result) in
-            switch result {
-                case .success(let graphQLResult):
-                    print(graphQLResult)
-                    completion(true)
-                case .failure(let error):
-                    print("error: \(error)")
-                    completion(false)
-
-            }
-        }
-        
-    }
-    
       
     
-    func updateStop(activityId: String, completion: @escaping (Bool) -> ()){
+    func grapqlStop(activityId: String, completion: @escaping (Bool) -> ()){
         
         let updateMutation = UpdateActivityEndMutation(activityId: activityId)
         let apollo: ApolloClient = {
@@ -365,7 +295,6 @@ class Activity: NSObject {
                             
                 if success! {
                     completion(true)
-                    
                 } else {
                     completion(false)
                 }
@@ -450,41 +379,56 @@ class Activity: NSObject {
     }
     
     
-    func uploadFile(activityId: String, file: String, completion: @escaping (Bool) -> ()){
+     func uploadFile(activityId: String, file: String, completion: @escaping (Bool) -> ()){
+            
+            let updateMutation = ActivityFileUploadMutation(activityId: activityId, file: file)
+            
+             let apollo: ApolloClient = {
+             let token = User.sharedInstance.jwt
+             
+             let configuration = URLSessionConfiguration.default
+
+             // Add additional headers as needed
+             configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+             let url = URL(string: GraphQL.ENDPOINT)!
+
+             //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
+            let session = URLSession(configuration: configuration)
+             return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+                 }()
+           
+            let image = UIImage(contentsOfFile: file)
+            let data = image?.jpegData(compressionQuality: 0.9)
+            let imageData: Data = data!
+            let files = GraphQLFile(fieldName: "file", originalName: "fa_activity_upload.png", mimeType: "image/png", data: imageData)
+            
+            // Actually upload the file
         
-        let updateMutation = ActivityFileUploadMutation(activityId: activityId, file: file)
+        apollo.upload(operation: updateMutation,
+                               files: [files]) { result in
+                let resultMap = try! result.get().data?.resultMap
+                let resultDic = resultMap as NSDictionary?
 
-              let apollo: ApolloClient = {
-              let token = User.sharedInstance.jwt
-              
-              let configuration = URLSessionConfiguration.default
+                                print(resultDic)
+                if resultDic == nil { // FAILED
+                    completion(false)
+                                                    
+                } else { // SUCCESS
+                    
+                    if resultDic?.value(forKey: "updateActivityUpload") != nil {
+                        
+                       completion(true)
 
-              // Add additional headers as needed
-              configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
-              let url = URL(string: GraphQL.ENDPOINT)!
-
-              //return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, configuration: configuration))
-             let session = URLSession(configuration: configuration)
-              return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
-              }()
-
-              apollo.perform(mutation: updateMutation) { (result) in
-                                         
-                  switch result {
-                          case .success(let graphQLResult):
-                              print(graphQLResult)
-                              completion(true)
-                          case .failure(let error):
-                              print("error: \(error)")
-                              completion(false)
-                  }
-                  
-              }
-
+                    } else {
+                        completion(false)
+                    }
+                                                 
+                }
+        }
+                            
         
     }
- 
-   
+    
     
 }
 

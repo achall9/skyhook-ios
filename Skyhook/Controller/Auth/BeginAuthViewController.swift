@@ -27,7 +27,6 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
     var email: String!
     var password: String!
    
-    var count = 0
     var phase: Int = 0
     // phase 0 = email input
     // phase 1 = new user register
@@ -103,31 +102,8 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         
         
     }
-    
-//    func welcomeUserName(){
-//        let apollo = ApolloClient(url: URL(string: GraphQL.ENDPOINT)!)
-//        let userDetailsQuery = UserDetailsQuery()
-//        apollo.fetch(query: userDetailsQuery) { result in
-//            switch result {
-//            case .success(let graphQLResult):
-//                print("SUCESS FOUND")
-//
-//                let resultMap = try! result.get().data?.resultMap
-//                let resultDic = resultMap as NSDictionary?
-//
-//
-//            case .failure(let error):
-//                // deal with network errors here
-//                print("FAILED TO QUERY USERS")
-////                subHeaderLbl.text = result.get().data.ma
-//               // self.subHeaderLbl.text = "Welcome, \(welcomeUserName())"
-//
-//            }
-//        }
-//
-//    }
+
  
-    
     func emailValidated(email:String)->Bool {
         errorLbl.alpha = 0.0
         
@@ -174,11 +150,7 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
                 self.appDelegate.enterApp(true)
                 
             } else {
-                //BEGIN DEV mode
-                self.count+=1
-                if self.count == 1 {
-                    self.loginUser(email: "achall@toplev.io", password: "shw-%fIns")
-                }
+             
                 //END DEV mode
                 self.errorLbl.text = "Login not recognized"
                 self.errorLbl.alpha = 1.0
@@ -200,30 +172,39 @@ class BeginAuthViewController: UIViewController, UITextFieldDelegate {
         showForgotPassword()
     }
     
-    func showForgotPassword(){
+    func showForgotPassword() {
+     
         errorLbl.alpha = 0.0
 
         let alert = UIAlertController(title: "Forgot Password", message: "Enter your email address to send a reset link.", preferredStyle: .alert)
-        
+             
         alert.addTextField { (textField) in
             textField.placeholder = "Enter email"
-        }
-        
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
-            let email = alert?.textFields![0] // Force unwrapping because we know it exists.
-            
-            /*
-            Auth.auth().sendPasswordReset(withEmail: email!.text!) { error in
-                if error != nil {
-                   //no email registered?
-                }
+            if self.email != nil {
+                textField.text = self.email
             }
-             */
+        }
+             
+        alert.addAction(UIAlertAction(title: "Reset", style: .default, handler: { [weak alert] (_) in
+            let email = alert?.textFields![0].text! // Force unwrapping because we know it exists.
+                
+            if self.emailValidated(email: email!) {
+                User().resetPassword(email: email! ) { result in
+                    
+                }
+                
+            }
+                 
         }))
+            
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
+             
         self.present(alert, animated: true, completion: nil)
+        
+        
     }
+    
+    
     
     
     

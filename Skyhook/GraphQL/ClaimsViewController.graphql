@@ -1,77 +1,110 @@
 
 
-query ClaimsList {
+query ClaimsList  {
    claims {
-   edges {
-      node {
-       id
-       claimNumber
-       claimDate
-       dueDate
-       insured {
-                  name
-                  phone
-                   email
-                  address {
-                       street1
-                       street2
-                       city
-                       state
-                       zip
-                   }
-       }
-       claimant {
-                  name
-                  phone
-                  email
-                  address {
-                       street1
-                       street2
-                       city
-                       state
-                       zip
-                   }
-          
-       }
-       customer {
-         id
-         customerName
-         customerContact
-         phone
-         address {
-             street1
-             street2
-             city
-             state
-             zip
-         }
-       }
-       status
-       activities {
-           edges {
-           node {
-             id
-             name
-             totalElapsedMillis
-             geo
-             flags
-             notes
-             status
-           }
-         }
-       }
-     }
-   }
+    edges {
+     node {
+      id
+      claimNumber
+      claimDate
+      dueDate
+      lossDate
+      notes
+      uploads {
+          id
+          url
+      }
+      insured {
+                 name
+                 phoneM
+                 phoneB
+                 email
+                 address {
+                      street1
+                      street2
+                      city
+                      state
+                      zip
+                  }
+      }
+      claimant {
+                 name
+                 phone
+                 address {
+                      street1
+                      street2
+                      city
+                      state
+                      zip
+                  }
+                  legal {
+                      name
+                      contact
+                      phone
+                       address {
+                      street1
+                      street2
+                      city
+                      state
+                      zip
+                  }
+                  }
+         
+      }
+      customer {
+        id
+        name
+        contact
+        phone
+        email
+        address {
+            street1
+            street2
+            city
+            state
+            zip
+        }
+      }
+      ia{
+        id
+        name
+        contact
+        phone
+        email
+        address {
+               street1
+               street2
+               city
+               state
+               zip
+        }
+      }
+      status
+      activities {
+          edges {
+          node {
+            id
+            name
+            totalElapsedMillis
+            geo
+            flags
+            notes {
+                note
+                posted
+            }
+            status
+            uploads {
+                uploadId
+                url
+            }
+          }
+        }
+      }
+    }
+  }
  }
 }
 
-
-mutation UpdateClaimEnd($claimId:ID!) {
-  updateClaimEnd(input: { claimId: $claimId }) {
-     success
-     message
-  }
-}
 
 
 mutation CreateActivity($claimId:ID!, $name:String!, $status:ActivityStatus,$type:ActivityType) {
@@ -87,7 +120,10 @@ mutation CreateActivity($claimId:ID!, $name:String!, $status:ActivityStatus,$typ
       totalElapsedMillis
       geo
       flags
-      notes
+      notes {
+        note
+        posted
+      }
       status
       started
       completed
@@ -102,12 +138,6 @@ mutation UpdateActivityStart($activityId:ID!) {
   }
 }
 
-mutation UpdateActivityPause($activityId:ID!, $pause:Boolean!) {
-  updateActivityPause(input: { activityId: $activityId, pause: $pause }) {
-    success
-    message
-  }
-}
 
 mutation UpdateActivityEnd($activityId:ID!) {
   updateActivityEnd(input: { activityId: $activityId }) {
@@ -144,6 +174,9 @@ mutation ActivityFileUpload($activityId: ID!, $file: Upload!){
         
     }
 }
+
+
+
 
 
 

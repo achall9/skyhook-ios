@@ -35,6 +35,20 @@ class ContactInfoView: UIView {
     
     @IBOutlet weak var claimantAddressLabel: UIButton!
     
+    
+    // Claimant Legal Fields
+    @IBOutlet weak var legalBusinessLabel: UILabel!
+    
+    @IBOutlet weak var legalContactNameLabel: UIButton!
+    
+    @IBOutlet weak var legalPhoneLabel: UIButton!
+    
+    @IBOutlet weak var legalAddressLabel: UIButton!
+    
+    
+    // General Claim Fields
+    @IBOutlet weak var notesLabel: UILabel!
+    
     var delegate: ContactViewDelegate?
 
     
@@ -69,6 +83,29 @@ class ContactInfoView: UIView {
         if let address = info.claimant?.address {
             claimantAddressLabel.setTitle(address.toString(), for: .normal)
         }
+        
+        
+        // Set Claimant Legal Data
+        if let lBusiness = info.claimant?.legalBusiness {
+            legalBusinessLabel.text = lBusiness
+        }
+        if let lContact = info.claimant?.legalContact {
+            legalContactNameLabel.setTitle(lContact, for: .normal)
+        }
+        if let lPhone = info.claimant?.legalPhone {
+            legalPhoneLabel.setTitle(lPhone, for: .normal)
+        }
+        if let lAddress = info.claimant?.legalAddress {
+            legalAddressLabel.setTitle(lAddress.toString(), for: .normal)
+        }
+        
+    
+        // Set General Claim Data -- Notes, attachments, etc
+        if info.notes != "" {
+            notesLabel.text = info.notes
+        } else {
+            notesLabel.text = "No notes set."
+        }
               
     }
     
@@ -95,5 +132,13 @@ class ContactInfoView: UIView {
         delegate?.didClickAddress(addr: claimantAddressLabel.titleLabel?.text ?? "")
     }
     
+    
+    @IBAction func legalPhoneClick(_ sender: Any) {
+          delegate?.didClickPhone(phone: legalPhoneLabel.titleLabel?.text ?? "")
+    }
+    
+    @IBAction func legalAddressClick(_ sender: Any) {
+         delegate?.didClickAddress(addr: legalAddressLabel.titleLabel?.text ?? "")
+    }
     
 }

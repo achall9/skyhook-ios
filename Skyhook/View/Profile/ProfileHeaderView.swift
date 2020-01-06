@@ -23,5 +23,6 @@ class ProfileHeaderView: UIView {
     @IBOutlet weak var timeLoggedLbl: UILabel!
     @IBOutlet weak var claimAssignedLbl: UILabel!
     
-
+    @IBOutlet weak var claimListHeaderLabel: UILabel!
+    
 }

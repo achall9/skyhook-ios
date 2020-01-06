@@ -8,12 +8,14 @@
 
 import UIKit
 import Apollo
+import Crashlytics
 
 class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FilterClickDelegate  {
     
     let appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var placeholderView: UIView!
     
     var claims: [Claim] = []
         
@@ -38,7 +40,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                name: NSNotification.Name(rawValue: Notifications.UPDATE_TIMER),
                object: nil)
         
-        self.getClaims(filter:-1)
+        self.getClaims(filter:0)
 
          
     }
@@ -77,7 +79,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // get claims assigned to current user
     func getClaims(filter:Int){
        self.showLoading()
-   
+
         Claim.sharedInstance.fetchClaims() { claims in
             self.claims.removeAll()
             self.stopLoading()
@@ -93,26 +95,24 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 }
 
                 break
-            case 1:
-                var sorted = claims
-                sorted.sort(by: { $0.dueDate!.compare($1.dueDate!) == .orderedAscending})
-                
+            default:
+                 var sorted = claims
+                 sorted.sort(by: { $0.dueDate!.compare($1.dueDate!) == .orderedAscending})
                 for claim in sorted {
                     if claim.status != .closed {
                         self.claims.append(claim)
+                     }
                     }
-                }
-                break
-            default:
-                for claim in claims {
-                    if claim.status != .closed {
-                        self.claims.append(claim)
-                    }
-                }
-                break
+                              break
             }
-//            self.claims = claims
-            self.tableView.reloadData()
+            
+            if self.claims.count > 0 {
+                self.placeholderView.alpha = 0.0
+                self.tableView.reloadData()
+            } else {
+                self.placeholderView.alpha = 1.0
+
+            }
         }
     }
     
@@ -195,6 +195,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     
     func showLoading() {
+        
           indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.gray)
           indicator.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
           indicator.center = self.view.center

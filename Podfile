@@ -13,12 +13,21 @@ target 'Skyhook' do
   pod 'Firebase/Auth'
   pod 'Firebase/Database'
   pod 'Firebase/Messaging'
+  
+  # Image loading
+ pod 'SDWebImage'
+  
+  # Pods for crash logging
+  pod 'Fabric', '~> 1.10.2'
+  pod 'Crashlytics', '~> 3.14.0'
 
   #GraphQL
   pod 'Apollo'
   
   #Close claim slider
   pod 'MTSlideToOpen'
+  
+
 
 
 

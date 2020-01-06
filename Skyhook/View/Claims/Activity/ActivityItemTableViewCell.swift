@@ -51,8 +51,7 @@ class ActivityItemTableViewCell: UITableViewCell {
                 
                 //already started in backend.. allow to stop
                 if activity.status == .started {
-                    activity.pauseTracking(id: activity.id!, pause: true, flag: "") { result in
-                        
+                    activity.stopTracking(id: activity.id!, flag: "") { result in
                         self.playButton.setImage(UIImage(named:"play_small"), for: .normal)
 
                     }
@@ -104,8 +103,7 @@ class ActivityItemTableViewCell: UITableViewCell {
             
             if appDelegate.activity?.id == self.activity?.id
             {
-                activity?.pauseTracking(id:activity!.id!, pause:true, flag:"") { result in
-                    
+                activity?.stopTracking(id:activity!.id!, flag:"") { result in
                     self.playButton.setImage(UIImage(named:"play_small"), for: .normal)
 
                 }

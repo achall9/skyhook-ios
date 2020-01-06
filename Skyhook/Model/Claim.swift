@@ -12,11 +12,11 @@ import Apollo
 class Claim: NSObject {
     
     class var sharedInstance: Claim {
-           struct Static {
-               static let instance: Claim = Claim()
-           }
-           return Static.instance
-       }
+        struct Static {
+            static let instance: Claim = Claim()
+        }
+        return Static.instance
+    }
        // MARK: - Variables And Properties
     // MARK: - Variables And Properties
     
@@ -24,39 +24,102 @@ class Claim: NSObject {
     var id: String?
     var claimNumber: String?
     var claimDate: String?
-//    var attachments:[String] = []
     var activities:[Activity] = []
     var status: ClaimStatus?
     var customer: User?
+    var firm: User?
     var claimant: User?
     var insured: User?
     var dueDate: String?
+    var lossDate: String?
+    var notes: String?
+    var uploads: [String] = []
 
 
-    func loadClaim(id: String, claimNumber: String, activities:[Activity],
-                   status: ClaimStatus, customer: User, claimant: User, insured: User, claimDate: String, dueDate: String) {
-        self.id = id
-        self.claimNumber = claimNumber
-        self.status = status
-        self.activities = activities
+    func loadClaim(node: NSDictionary) {
+        
+        self.id = node.value(forKey: "id") as? String ?? ""
+        self.claimNumber = node.value(forKey: "claimNumber") as? String ?? ""
+        self.status = node.value(forKey: "status") as? ClaimStatus
+        self.notes = node.value(forKey: "notes") as? String ?? "No notes set."
+        self.claimDate = formattedClaimDate(claimDate: node.value(forKey: "claimDate") as? String ?? "")
+        self.dueDate = formattedClaimDate(claimDate: node.value(forKey: "dueDate") as? String ?? "")
+        self.lossDate = formattedClaimDate(claimDate: node.value(forKey: "lossDate") as? String ?? "")
+
+       // Claim Attachments
+        let claimUploads = node.value(forKey: "uploads") as? [NSDictionary] ?? []
+        for upload in claimUploads {
+            uploads.append(upload.value(forKey: "url") as? String ?? "")
+        }
+            
+        
+        
+        // Parse claim owner / customer
+        let customer = User()
+        let customerDic = node.value(forKey:"customer") as? NSDictionary
+        if customerDic != nil {
+            customer.loadCustomer(customer: customerDic!)
+        }
         self.customer = customer
+              
+        //Parse IA firm that claim was assigned to
+        let firm = User()
+        let firmDic = node.value(forKey:"ia") as? NSDictionary
+        if firmDic != nil {
+            firm.loadFirm(firm: firmDic!)
+        }
+        self.firm = firm
+        
+        
+        //activities parse
+        var activities:[Activity] = []
+        let actsDic = node.value(forKey: "activities") as? NSDictionary
+        let actEdges = actsDic?.value(forKey: "edges") as? [NSDictionary]
+        for actEdge in actEdges ?? [] {
+            let actNode = actEdge.value(forKey: "node") as? NSDictionary
+            let activity = Activity()
+            activity.loadActivity(actNode!)
+            if(activity.status != .complete) {
+                activities.append(activity)
+            }
+        }
+        self.activities = activities
+            
+                        
+        //claimaint parse
+        let claimantDic = node.value(forKey: "claimant") as? NSDictionary
+        let claimant = User()
+        claimant.loadClaimant(claimant: claimantDic!)
         self.claimant = claimant
+        
+        
+        //insured parse
+        let insuredDic = node.value(forKey: "insured") as? NSDictionary
+        let insured = User()
+        insured.loadInsured(insured: insuredDic!)
         self.insured = insured
-        self.claimDate = formattedClaimDate(claimDate: claimDate)
-        self.dueDate = formattedClaimDate(claimDate: dueDate)
+                        
+       
     }
     
     func formattedClaimDate(claimDate:String)->String {
+        print(claimDate)
+        if claimDate == "" {
+            return ""
+        }
         var date = claimDate
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-        let dateVal = dateFormatter.date(from:date)!
-
-        dateFormatter.dateFormat = "MM/dd/yyyy"
-        date = dateFormatter.string(from: dateVal)
-
-        return date
+        
+        if let dateVal = dateFormatter.date(from:date) {
+            dateFormatter.dateFormat = "MM/dd/yyyy"
+            date = dateFormatter.string(from: dateVal)
+            return date
+        }
+        else{
+            return ""
+        }
     }
     
     
@@ -71,6 +134,8 @@ class Claim: NSObject {
         self.customer = nil
         self.insured = nil
         self.claimant = nil
+        self.dueDate = ""
+        self.notes = ""
     }
 
     
@@ -102,65 +167,18 @@ class Claim: NSObject {
                 let claimsDic = resultDic?.value(forKey: "claims") as? NSDictionary
                 let edges = claimsDic?.value(forKey: "edges") as? [NSDictionary]
                 
-                for edge in edges! {
-                    let node = edge.value(forKey: "node") as? NSDictionary
-                    
-                    //activities parse
-                    var activities:[Activity] = []
-                    let actsDic = node?.value(forKey: "activities") as? NSDictionary
-                    let actEdges = actsDic?.value(forKey: "edges") as? [NSDictionary]
-                    for actEdge in actEdges ?? [] {
+                if edges != nil {
+                    for edge in edges! {
+                        let node = edge.value(forKey: "node") as? NSDictionary
 
-                        let actNode = actEdge.value(forKey: "node") as? NSDictionary
-                        let activity = Activity()
-                        activity.loadActivity(actNode!)
-                        activities.append(activity)
+                        let claim = Claim()
+                        if let dic = node {
+                            claim.loadClaim(node: dic)
+                            claims.append(claim)
+                        }
                     }
-                    
-                    
-                    //claimaint parse
-                    var claimants:[User] = []
-                    let claimantsDic = node?.value(forKey: "claimant") as? [NSDictionary]
-                    
-                    for claimantDic in claimantsDic! {
-                        let claimant = User()
-
-                        claimant.loadClaimant(claimant: claimantDic)
-                        claimants.append(claimant)
-                    }
-                
-                    
-                    if claimants.count == 0 {
-                        claimants.append(User())
-                    }
-                    
-                    
-                    //insured parse
-                    var insuredUsers:[User] = []
-                    let insuredsDic = node?.value(forKey: "insured") as? [NSDictionary]
-                  
-                    for insuredDic in insuredsDic! {
-                        let insured = User()
-                        
-                        insured.loadInsured(insured: insuredDic)
-                        insuredUsers.append(insured)
-                    }
-                    if insuredUsers.count == 0 {
-                        insuredUsers.append(User())
-                    }
-                    
-                    
-                    // get claim owner / customer
-                    let customer = User()
-                    let customerDic = node?.value(forKey:"customer") as? NSDictionary
-                    customer.loadCustomer(customer: customerDic!)
-                    
-                    
-            
-                    let claim = Claim()
-                    claim.loadClaim(id: node?.value(forKey: "id") as! String, claimNumber: node?.value(forKey: "claimNumber") as! String, activities: activities, status: node?.value(forKey: "status") as! ClaimStatus, customer: customer, claimant: claimants[0], insured: insuredUsers[0], claimDate: node?.value(forKey: "claimDate") as? String ?? "", dueDate: node?.value(forKey: "dueDate") as? String ?? "")
-                    claims.append(claim)
                 }
+              
                     
                 completion(claims)
                 
@@ -182,43 +200,43 @@ class Claim: NSObject {
     
     func closeClaim(claimId: String, completion: @escaping (Bool) -> ()){
            
-           let updateMutation = UpdateClaimEndMutation(claimId: claimId)
-           let apollo: ApolloClient = {
-                                               
-               let token = User.sharedInstance.jwt
-                                          
-               let configuration = URLSessionConfiguration.default
-
-               // Add additional headers as needed
-               configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
-                                         
-               let url = URL(string: GraphQL.ENDPOINT)!
-               let session = URLSession(configuration: configuration)
-                                           
-               return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
-                                    
-           }()
-
-                                 
-           apollo.perform(mutation: updateMutation) { (result) in
-                let resultMap = try! result.get().data?.resultMap
-                let resultDic = resultMap as NSDictionary?
-                switch result {
-                   case .success(let graphQLResult):
-                       print(graphQLResult)
-                       let res = resultDic!["updateClaimEnd"] as? NSDictionary
-                       let success = res!["success"] as? Bool
-                       if success! {
-                        completion(true)
-                       } else {
-                        completion(false)
-                        }
-                    case .failure(let error):
-                       print("error: \(error)")
-                       completion(false)
-
-               }
-           }
+//           let updateMutation = UpdateClaimEndMutation(claimId: claimId)
+//           let apollo: ApolloClient = {
+//
+//               let token = User.sharedInstance.jwt
+//
+//               let configuration = URLSessionConfiguration.default
+//
+//               // Add additional headers as needed
+//               configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+//
+//               let url = URL(string: GraphQL.ENDPOINT)!
+//               let session = URLSession(configuration: configuration)
+//
+//               return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+//
+//           }()
+//
+//
+//           apollo.perform(mutation: updateMutation) { (result) in
+//                let resultMap = try! result.get().data?.resultMap
+//                let resultDic = resultMap as NSDictionary?
+//                switch result {
+//                   case .success(let graphQLResult):
+//                       print(graphQLResult)
+//                       let res = resultDic!["updateClaimEnd"] as? NSDictionary
+//                       let success = res!["success"] as? Bool
+//                       if success! {
+//                        completion(true)
+//                       } else {
+//                        completion(false)
+//                        }
+//                    case .failure(let error):
+//                       print("error: \(error)")
+//                       completion(false)
+//
+//               }
+//           }
            
        }
 

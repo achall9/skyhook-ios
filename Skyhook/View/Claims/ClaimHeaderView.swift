@@ -22,6 +22,7 @@ class ClaimHeaderView: UIView {
    
     @IBOutlet weak var contactAddressButton: UIButton!
     
+    @IBOutlet weak var attachmentButton: UIButton!
     @IBOutlet weak var dueDateLabel: UILabel!
     
     var claim: Claim?
@@ -40,6 +41,18 @@ class ClaimHeaderView: UIView {
         self.contactAddressButton.setTitle(claim.claimant?.address?.toString(), for: .normal)
         self.dueDateLabel.text = "Due Date: \(claim.dueDate ?? "-")"
         
+        
+        //set attachments
+        var attachments = "-"
+        for url in claim.uploads {
+            if attachments == "-" {
+                attachments = "\(url)"
+            } else {
+                attachments = "\(attachments), \(url)"
+            }
+        }
+        self.attachmentButton.setTitle(attachments, for: .normal)
+        
     }
     
     @IBAction func goToDetails(_ sender: Any) {
@@ -49,16 +62,19 @@ class ClaimHeaderView: UIView {
     }
     
     @IBAction func clickAttachment(_ sender: Any) {
-        //go to file view on web url
-//        guard let url = URL(string: "http://www.google.com") else {
-//            return //be safe
-//        }
-//
-//        if #available(iOS 10.0, *) {
-//            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-//        } else {
-//            UIApplication.shared.openURL(url)
-//        }
+        
+        if (claim?.uploads.count)! > 0 {
+            //  go to file view on web url
+            guard let url = URL(string: (claim?.uploads[0])!) else {
+                  return //be safe
+              }
+
+              if #available(iOS 10.0, *) {
+                  UIApplication.shared.open(url, options: [:], completionHandler: nil)
+              } else {
+                  UIApplication.shared.openURL(url)
+              }
+        }
         
     }
     

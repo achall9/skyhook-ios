@@ -21,7 +21,7 @@ class ClaimInfoViewController: UIViewController, ContactViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+                
             // Set Company View for GBIC and IA Firm
             let compView: CompanyInfoView = .fromNib()
             compView.frame = CGRect(x: 15 , y: 10, width: self.scrollView.frame.width-30, height: compView.frame.height)

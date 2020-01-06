@@ -9,5 +9,5 @@
 import Foundation
 
 class GraphQL {
-    static let ENDPOINT = "http://sky-dev.herokuapp.com/graphql"
+    static let ENDPOINT = "http://sky-dev.ambrosia-med.com/graphql"
 }

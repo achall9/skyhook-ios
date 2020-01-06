@@ -20,7 +20,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ClaimsTableViewCell", bundle: nil), forCellReuseIdentifier: "ClaimCell")
-        
        
       
         self.getClaims()
@@ -35,7 +34,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
     }
     
+    
     func getClaims() {
+        
         Claim.sharedInstance.fetchClaims() { claims in
             
             self.loadHeaderData(claims:claims)
@@ -60,7 +61,13 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         headerView.profileImage.layer.cornerRadius = headerView.profileImage.frame.height/2
         headerView.profileImage.clipsToBounds = true
         
+        
+        if let image = User().getSavedImage() {
+            headerView.profileImage.image = image
+        }
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.profilePictureTap(_:)))
+        headerView.profileImage.isUserInteractionEnabled = true
         headerView.profileImage.addGestureRecognizer(tap)
         
         // grid views
@@ -103,7 +110,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         var openCount = 0
         var closedCount = 0
-        var timeLogged = 0
+        var assignedToday = 0
         var assigned = 0
         for claim in claims {
             
@@ -114,23 +121,38 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             if claim.status == .open || claim.status == .active {
                 openCount+=1
             }
+            let today = Date()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "MM/dd/yyyy"
+            let todayStr = dateFormatter.string(from: today)
+            
+            if claim.claimDate == todayStr {
+                assignedToday+=1
+            }
             
             
         }
         
         headerView.claimOpenLbl.text = String(openCount)
         headerView.claimClosedLbl.text = String(closedCount)
-        headerView.timeLoggedLbl.text = String(timeLogged)
+        headerView.timeLoggedLbl.text = String(assignedToday)
         headerView.claimAssignedLbl.text = String(assigned)
         
     }
     
     @objc func profilePictureTap(_ sender: UITapGestureRecognizer? = nil) {
         
-        ImagePickerManager().pickImage(self){ image in
+        ImagePickerManager().pickImage(self) { imageUrl in
             //add image to profile
-//            self.headerView.profileImage.image = image
+            
+            if let image = UIImage(contentsOfFile: imageUrl.path) {
                 
+               if User().saveImage(image: image) {
+                
+                    self.headerView.profileImage.image = image
+                }
+            }
+    
         }
     }
     
@@ -148,7 +170,11 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.claims.count
+        if claims.count > 30{
+            return 30
+        } else {
+            return claims.count
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
