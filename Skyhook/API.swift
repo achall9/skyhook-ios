@@ -2669,6 +2669,104 @@ public final class ActivityFileUploadMutation: GraphQLMutation {
   }
 }
 
+public final class UpdateClaimEndMutation: GraphQLMutation {
+  /// mutation UpdateClaimEnd($claimId: ID!) {
+  ///   updateClaimEnd(input: {claimId: $claimId}) {
+  ///     __typename
+  ///     success
+  ///     message
+  ///   }
+  /// }
+  public let operationDefinition =
+    "mutation UpdateClaimEnd($claimId: ID!) { updateClaimEnd(input: {claimId: $claimId}) { __typename success message } }"
+
+  public let operationName = "UpdateClaimEnd"
+
+  public var claimId: GraphQLID
+
+  public init(claimId: GraphQLID) {
+    self.claimId = claimId
+  }
+
+  public var variables: GraphQLMap? {
+    return ["claimId": claimId]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Mutation"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("updateClaimEnd", arguments: ["input": ["claimId": GraphQLVariable("claimId")]], type: .object(UpdateClaimEnd.selections)),
+    ]
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(updateClaimEnd: UpdateClaimEnd? = nil) {
+      self.init(unsafeResultMap: ["__typename": "Mutation", "updateClaimEnd": updateClaimEnd.flatMap { (value: UpdateClaimEnd) -> ResultMap in value.resultMap }])
+    }
+
+    public var updateClaimEnd: UpdateClaimEnd? {
+      get {
+        return (resultMap["updateClaimEnd"] as? ResultMap).flatMap { UpdateClaimEnd(unsafeResultMap: $0) }
+      }
+      set {
+        resultMap.updateValue(newValue?.resultMap, forKey: "updateClaimEnd")
+      }
+    }
+
+    public struct UpdateClaimEnd: GraphQLSelectionSet {
+      public static let possibleTypes = ["ClaimResponse"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("success", type: .nonNull(.scalar(Bool.self))),
+        GraphQLField("message", type: .nonNull(.scalar(String.self))),
+      ]
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public init(success: Bool, message: String) {
+        self.init(unsafeResultMap: ["__typename": "ClaimResponse", "success": success, "message": message])
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var success: Bool {
+        get {
+          return resultMap["success"]! as! Bool
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "success")
+        }
+      }
+
+      public var message: String {
+        get {
+          return resultMap["message"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "message")
+        }
+      }
+    }
+  }
+}
+
 public struct UserFullDetails: GraphQLFragment {
   /// fragment UserFullDetails on User {
   ///   __typename

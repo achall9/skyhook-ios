@@ -172,7 +172,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let cell = tableView.dequeueReusableCell(withIdentifier: "ClaimCell") as! ClaimsTableViewCell
                 
         cell.statusView.layer.borderWidth = 0.0
-        cell.statusLabel.text = "ACTIVE"
+        cell.statusLabel.text = claims[indexPath.row].status?.rawValue
         cell.statusView.backgroundColor = ColorUtils.getOrangeColor()
         for act in claims[indexPath.row].activities {
             if act.status == .started {
@@ -187,7 +187,7 @@ class ClaimsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         cell.claimantNameLabel.text = claims[indexPath.row].claimant?.fullName
         cell.insuredNameLabel.text = claims[indexPath.row].insured?.fullName
         
-        cell.dateLabel.text = claims[indexPath.row].claimDate?.description
+        cell.dateLabel.text = "Assigned: \(claims[indexPath.row].claimDate?.description ?? "")"
         
         
         return cell

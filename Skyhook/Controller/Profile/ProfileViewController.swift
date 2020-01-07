@@ -12,6 +12,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var tableView: UITableView!
     
     var headerView : ProfileHeaderView!
+
+    var indicator: UIActivityIndicatorView!
     
     var claims: [Claim] = []
     
@@ -21,11 +23,12 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.dataSource = self
         tableView.register(UINib(nibName: "ClaimsTableViewCell", bundle: nil), forCellReuseIdentifier: "ClaimCell")
        
-      
-        self.getClaims()
-        
         //set profile headerview to table
         setHeader()
+      
+        self.getClaims(type: 0)
+        
+    
 
     }
     
@@ -35,16 +38,37 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     
-    func getClaims() {
-        
+    func getClaims(type:Int) {
+        showLoading()
         Claim.sharedInstance.fetchClaims() { claims in
-            
+            self.stopLoading()
             self.loadHeaderData(claims:claims)
             self.claims.removeAll()
+            
             for claim in claims {
-                if claim.status == .closed  {
+                if type == 0 {
+                    if claim.status == .closed  {
+                        self.claims.append(claim)
+                    }
+                }
+                if type == 1 {
+                    if claim.status == .active  {
+                        self.claims.append(claim)
+                    }
+                }
+                if type == 2 {
+                    let today = Date()
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "MM/dd/yyyy"
+                    let todayStr = dateFormatter.string(from: today)
+                    if claim.claimDate == todayStr {
+                        self.claims.append(claim)
+                    }
+                }
+                if type == 3 {
                     self.claims.append(claim)
                 }
+               
             }
            
             self.tableView.reloadData()
@@ -56,36 +80,53 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         headerView = (Bundle.main.loadNibNamed("ProfileHeaderView", owner: self, options: nil)![0] as! ProfileHeaderView)
         
+        //tap recognizer for filter views and profile image
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.viewTap(_:)))
+        //tap recognizer for filter views and profile image
+        let tap0 = UITapGestureRecognizer(target: self, action: #selector(self.viewTap(_:)))
+        //tap recognizer for filter views and profile image
+        let tap1 = UITapGestureRecognizer(target: self, action: #selector(self.viewTap(_:)))
+        //tap recognizer for filter views and profile image
+        let tap2 = UITapGestureRecognizer(target: self, action: #selector(self.viewTap(_:)))
+        //tap recognizer for filter views and profile image
+        let tap3 = UITapGestureRecognizer(target: self, action: #selector(self.viewTap(_:)))
+        
         //profile image circular
         headerView.profileImage.layer.masksToBounds = false
         headerView.profileImage.layer.cornerRadius = headerView.profileImage.frame.height/2
         headerView.profileImage.clipsToBounds = true
         
-        
         if let image = User().getSavedImage() {
             headerView.profileImage.image = image
         }
-        
-        let tap = UITapGestureRecognizer(target: self, action: #selector(self.profilePictureTap(_:)))
         headerView.profileImage.isUserInteractionEnabled = true
         headerView.profileImage.addGestureRecognizer(tap)
+        
         
         // grid views
         headerView.view0.layer.masksToBounds = false
         headerView.view0.layer.cornerRadius = headerView.view0.frame.height/2
         headerView.view0.clipsToBounds = true
+        headerView.view0.isUserInteractionEnabled = true
+        headerView.view0.addGestureRecognizer(tap0)
         
         headerView.view1.layer.masksToBounds = false
         headerView.view1.layer.cornerRadius = headerView.view1.frame.height/2
         headerView.view1.clipsToBounds = true
+        headerView.view1.isUserInteractionEnabled = true
+        headerView.view1.addGestureRecognizer(tap1)
         
         headerView.view2.layer.masksToBounds = false
         headerView.view2.layer.cornerRadius = headerView.view2.frame.height/2
         headerView.view2.clipsToBounds = true
+        headerView.view2.isUserInteractionEnabled = true
+        headerView.view2.addGestureRecognizer(tap2)
         
         headerView.view3.layer.masksToBounds = false
         headerView.view3.layer.cornerRadius = headerView.view3.frame.height/2
         headerView.view3.clipsToBounds = true
+        headerView.view3.isUserInteractionEnabled = true
+        headerView.view3.addGestureRecognizer(tap3)
         
         // SET DATA
         headerView.nameLabel.text = User.sharedInstance.fullName
@@ -140,20 +181,40 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
     }
     
-    @objc func profilePictureTap(_ sender: UITapGestureRecognizer? = nil) {
+    @objc func viewTap(_ sender: UITapGestureRecognizer? = nil) {
         
-        ImagePickerManager().pickImage(self) { imageUrl in
-            //add image to profile
-            
-            if let image = UIImage(contentsOfFile: imageUrl.path) {
-                
-               if User().saveImage(image: image) {
-                
-                    self.headerView.profileImage.image = image
-                }
-            }
-    
+        if sender?.view == headerView.profileImage {
+            ImagePickerManager().pickImage(self) { imageUrl in
+                      //add image to profile
+                      
+                      if let image = UIImage(contentsOfFile: imageUrl.path) {
+                          
+                         if User().saveImage(image: image) {
+                              self.headerView.profileImage.image = image
+                          }
+                      }
+              
+                  }
         }
+        
+        if sender?.view == headerView.view0 {
+            headerView.claimListHeaderLabel.text = "Claims Closed"
+            self.getClaims(type: 0)
+        }
+        if sender?.view == headerView.view1 {
+            headerView.claimListHeaderLabel.text = "Claims Open"
+            self.getClaims(type: 1)
+        }
+        if sender?.view == headerView.view2 {
+            headerView.claimListHeaderLabel.text = "Assigned Today"
+            self.getClaims(type: 2)
+        }
+        if sender?.view == headerView.view3 {
+            self.getClaims(type: 3)
+            headerView.claimListHeaderLabel.text = "Claims Assigned"
+        }
+        
+      
     }
     
     
@@ -184,16 +245,37 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ClaimCell") as! ClaimsTableViewCell
         
-        cell.statusLabel.text = "CLOSED"
-        cell.statusView.backgroundColor = ColorUtils.getGreenColor()
+        cell.statusLabel.text = claims[indexPath.row].status?.rawValue
+        if claims[indexPath.row].status == .closed {
+            cell.statusView.backgroundColor = ColorUtils.getGreenColor()
+        }
+        else {
+            cell.statusView.backgroundColor = ColorUtils.getOrangeColor()
+        }
              
         cell.claimNumberLabel.text = claims[indexPath.row].claimNumber
         cell.claimantNameLabel.text = claims[indexPath.row].claimant?.fullName
         cell.insuredNameLabel.text = claims[indexPath.row].insured?.fullName
 
-        cell.dateLabel.text = claims[indexPath.row].claimDate?.description
+        cell.dateLabel.text = "Assigned: \(claims[indexPath.row].claimDate?.description ?? "")"
 
         return cell
     }
 
+    
+    func showLoading() {
+        
+          indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.gray)
+          indicator.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+          indicator.center = self.view.center
+          self.view.addSubview(indicator)
+          self.view.bringSubviewToFront(indicator)
+          UIApplication.shared.isNetworkActivityIndicatorVisible = true
+          indicator.startAnimating()
+      }
+      
+      func stopLoading(){
+          indicator.stopAnimating()
+      }
+    
 }

@@ -115,9 +115,12 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     }
     
     func goToClaimDetail () {
-        if claim!.activities[selectedIndex!].status == .complete {
-            self.claim?.activities.remove(at: selectedIndex!)
+        if selectedIndex! < (claim?.activities.count)! {
+            if claim!.activities[selectedIndex!].status == .complete {
+                self.claim?.activities.remove(at: selectedIndex!)
+            }
         }
+       
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ClaimDetailViewController") as! ClaimDetailViewController
         viewController.claim = self.claim
         self.navigationController?.pushViewController(viewController, animated: true)
@@ -151,15 +154,17 @@ class ActivityDetailViewController: BaseViewController, UITextViewDelegate {
     
     @IBAction func playButtonClick(_ sender: Any) {
         if !appDelegate.isTracking {
-          
-            self.claim!.activities[self.selectedIndex!].startTracking() { result in
-                
-                if result {
-                    self.playButton.setImage(UIImage(named:"stop_large"), for: .normal)
-                } else {
-                    self.showError(message:"This activity has been finished already. Please create a new one to begin tracking.")
+            if selectedIndex! < (claim?.activities.count)! {
+                self.claim!.activities[self.selectedIndex!].startTracking() { result in
+                    
+                    if result {
+                        self.playButton.setImage(UIImage(named:"stop_large"), for: .normal)
+                    } else {
+                        self.showError(message:"This activity has been finished already. Please create a new one to begin tracking.")
+                    }
                 }
             }
+            
         }
             // Stop Play
         else {

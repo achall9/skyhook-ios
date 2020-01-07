@@ -200,43 +200,43 @@ class Claim: NSObject {
     
     func closeClaim(claimId: String, completion: @escaping (Bool) -> ()){
            
-//           let updateMutation = UpdateClaimEndMutation(claimId: claimId)
-//           let apollo: ApolloClient = {
-//
-//               let token = User.sharedInstance.jwt
-//
-//               let configuration = URLSessionConfiguration.default
-//
-//               // Add additional headers as needed
-//               configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
-//
-//               let url = URL(string: GraphQL.ENDPOINT)!
-//               let session = URLSession(configuration: configuration)
-//
-//               return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
-//
-//           }()
-//
-//
-//           apollo.perform(mutation: updateMutation) { (result) in
-//                let resultMap = try! result.get().data?.resultMap
-//                let resultDic = resultMap as NSDictionary?
-//                switch result {
-//                   case .success(let graphQLResult):
-//                       print(graphQLResult)
-//                       let res = resultDic!["updateClaimEnd"] as? NSDictionary
-//                       let success = res!["success"] as? Bool
-//                       if success! {
-//                        completion(true)
-//                       } else {
-//                        completion(false)
-//                        }
-//                    case .failure(let error):
-//                       print("error: \(error)")
-//                       completion(false)
-//
-//               }
-//           }
+           let updateMutation = UpdateClaimEndMutation(claimId: claimId)
+           let apollo: ApolloClient = {
+
+               let token = User.sharedInstance.jwt
+
+               let configuration = URLSessionConfiguration.default
+
+               // Add additional headers as needed
+               configuration.httpAdditionalHeaders = ["Authorization": "Bearer \(token ?? "")"]
+
+               let url = URL(string: GraphQL.ENDPOINT)!
+               let session = URLSession(configuration: configuration)
+
+               return ApolloClient(networkTransport: HTTPNetworkTransport(url: url, session: session, sendOperationIdentifiers: false, useGETForQueries: false, delegate: nil))
+
+           }()
+
+
+           apollo.perform(mutation: updateMutation) { (result) in
+                let resultMap = try! result.get().data?.resultMap
+                let resultDic = resultMap as NSDictionary?
+                switch result {
+                   case .success(let graphQLResult):
+                       print(graphQLResult)
+                       let res = resultDic!["updateClaimEnd"] as? NSDictionary
+                       let success = res!["success"] as? Bool
+                       if success! {
+                        completion(true)
+                       } else {
+                        completion(false)
+                        }
+                    case .failure(let error):
+                       print("error: \(error)")
+                       completion(false)
+
+               }
+           }
            
        }
 

@@ -175,6 +175,14 @@ mutation ActivityFileUpload($activityId: ID!, $file: Upload!){
     }
 }
 
+mutation UpdateClaimEnd($claimId:ID!) {
+  updateClaimEnd(input: { claimId: $claimId }) {
+     success
+     message
+  }
+}
+
+
 
 
 
